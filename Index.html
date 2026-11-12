@@ -1,0 +1,957 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Switch the Glitch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a ring of 12 wide glass cards facing inward. The front card is full size, its
+   neighbours shrink and tilt. Everything that changes every frame is only a transform or an
+   opacity, so phones never have to repaint a card while it moves. Rings, floor glow and ribbons
+   are drawn on one canvas behind the cards. */
+:root{
+  --black:#050505;
+  --charcoal:#111111;
+  --graphite:#1C1C1C;
+  --grey:#666666;
+  --silver:#999999;
+  --light-silver:#D6D6D6;
+  --off-white:#F5F5F5;
+  --white:#FFFFFF;
+  --blue:#2D6BFF;
+  --blue-bright:#5E9BFF;
+  --blue-soft:#A9C7FF;
+  --blue-deep:#0B1F52;
+  --font:"Plus Jakarta Sans","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+/* paints the strips under the notch and the swipe bar, so no light band shows there */
+html{background:linear-gradient(180deg,#111111 0,#111111 45%,#050505 55%,#050505 100%)}
+html{height:100%}
+html{background:var(--black)}
+body{
+  margin:0;position:relative;min-height:100%;overflow-x:hidden;
+  background:var(--black);color:var(--off-white);
+  font-family:var(--font);-webkit-font-smoothing:antialiased;
+}
+.hero{position:relative;height:100vh;height:100svh;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* ---------- stage ---------- */
+.stage{
+  position:absolute;inset:0;z-index:1;
+  --cw:clamp(300px,min(52vw,62svh),760px);
+  --ch:calc(var(--cw)*.56);
+  overflow:hidden;cursor:grab;touch-action:pan-y;
+  -webkit-user-select:none;user-select:none;
+}
+.stage.drag{cursor:grabbing}
+.scene{position:absolute;left:50%;top:40%;width:0;height:0}
+.probe{position:absolute;left:0;top:0;width:var(--cw);height:0;visibility:hidden;pointer-events:none}
+
+/* ---------- glass cards ---------- */
+.wrap,.rwrap{
+  position:absolute;
+  left:calc(var(--cw)/-2);top:calc(var(--ch)/-2);
+  width:var(--cw);height:var(--ch);
+  pointer-events:none;
+}
+.rwrap{
+  -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.34),rgba(0,0,0,0) 48%);
+  mask-image:linear-gradient(to top,rgba(0,0,0,.34),rgba(0,0,0,0) 48%);
+}
+.card{
+  position:absolute;inset:0;overflow:hidden;
+  border-radius:calc(var(--cw)*.04);
+  border:1px solid rgba(150,190,255,.38);
+  background:
+    linear-gradient(135deg,rgba(150,190,255,.20),rgba(255,255,255,.04) 30%,rgba(5,10,30,.42) 68%,rgba(60,110,255,.14)),
+    rgba(10,14,26,.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    inset 0 1px 0 rgba(200,222,255,.42),
+    inset 0 0 30px rgba(60,110,255,.08),
+    0 16px 28px rgba(0,0,0,.6);
+}
+.card::before{ /* chrome light streak */
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(115deg,rgba(255,255,255,0) 34%,rgba(190,215,255,.20) 46%,rgba(255,255,255,.05) 52%,rgba(255,255,255,0) 62%);
+}
+.rwrap .card{box-shadow:none}
+.halo{ /* white and blue edge light, only its opacity changes */
+  position:absolute;inset:0;border-radius:calc(var(--cw)*.04);
+  border:1px solid rgba(175,208,255,.95);
+  box-shadow:0 0 40px rgba(45,107,255,.55),0 0 10px rgba(255,255,255,.28),inset 0 0 24px rgba(70,125,255,.18);
+  opacity:0;
+}
+.content{position:absolute;inset:0;padding:calc(var(--cw)*.06);z-index:0}
+.c-left{position:relative;width:60%;height:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:calc(var(--cw)*.018)}
+.pillx{
+  display:inline-flex;align-items:center;gap:calc(var(--cw)*.012);
+  padding:calc(var(--cw)*.01) calc(var(--cw)*.022);
+  font:600 max(10px,calc(var(--cw)*.025))/1 var(--font);color:var(--off-white);
+  border:1px solid rgba(120,170,255,.65);border-radius:999px;background:rgba(45,107,255,.16);
+}
+.pillx svg{width:calc(var(--cw)*.026);height:calc(var(--cw)*.026);min-width:10px;min-height:10px}
+.c-title{margin:calc(var(--cw)*.01) 0 0;font:700 max(16px,calc(var(--cw)*.056))/1.08 var(--font);letter-spacing:-.015em;color:var(--white)}
+.c-sub{margin:0;font:600 max(12px,calc(var(--cw)*.04))/1.2 var(--font);color:var(--silver)}
+.c-desc{margin:calc(var(--cw)*.012) 0 0;font:400 max(11px,calc(var(--cw)*.026))/1.45 var(--font);color:var(--light-silver);max-width:92%}
+.c-btn{
+  margin-top:calc(var(--cw)*.014);display:inline-flex;align-items:center;gap:calc(var(--cw)*.012);
+  padding:calc(var(--cw)*.016) calc(var(--cw)*.03);
+  font:600 max(11px,calc(var(--cw)*.028))/1 var(--font);color:var(--white);
+  border:1.5px solid var(--blue-bright);border-radius:999px;background:linear-gradient(180deg,rgba(45,107,255,.38),rgba(10,20,55,.6));box-shadow:0 0 16px rgba(45,107,255,.35);
+}
+.c-btn svg{width:calc(var(--cw)*.022);height:calc(var(--cw)*.022);min-width:9px;min-height:9px}
+.c-art{position:absolute;right:calc(var(--cw)*.035);top:12%;bottom:6%;width:38%}
+.c-art svg{width:100%;height:100%;display:block}
+.bm{position:absolute;right:calc(var(--cw)*.04);top:calc(var(--cw)*.04);width:calc(var(--cw)*.032);height:calc(var(--cw)*.04);min-width:12px;min-height:15px;color:var(--light-silver)}
+
+/* ---------- controls ---------- */
+.pausebtn{
+  position:absolute;z-index:3;top:calc(18px + env(safe-area-inset-top,0px));
+  right:max(16px,env(safe-area-inset-right,0px));
+  height:36px;padding:0 14px;border-radius:18px;cursor:pointer;
+  font:600 11px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--off-white);
+  border:1px solid rgba(120,170,255,.5);background:rgba(10,14,26,.7);
+}
+.pausebtn:hover{border-color:var(--blue-soft)}
+.ctl{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1200px;margin-inline:auto;
+  padding-block:0 calc(26px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.btn{
+  width:52px;height:52px;display:grid;place-items:center;padding:0;cursor:pointer;
+  border-radius:50%;color:var(--white);
+  border:1.5px solid rgba(120,170,255,.75);
+  background:linear-gradient(160deg,rgba(80,135,255,.30),rgba(5,8,20,.92));
+  box-shadow:0 0 18px rgba(45,107,255,.28);
+  transition:border-color .2s;
+}
+.btn:hover{border-color:var(--blue-soft);box-shadow:0 0 26px rgba(45,107,255,.55)}
+.btn svg{width:22px;height:22px}
+.dots{display:flex;align-items:center;gap:6px}
+.dot{width:26px;height:44px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.dot::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--grey);transition:background .25s,transform .25s}
+.dot[aria-current="true"]::before{background:var(--blue-bright);transform:scale(1.2);box-shadow:0 0 14px rgba(45,107,255,.95)}
+.btn:focus-visible,.dot:focus-visible,.pausebtn:focus-visible,.stage:focus-visible{outline:2px solid var(--blue-bright);outline-offset:3px}
+.stage:focus-visible{outline-offset:-4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* search bar (top centre) and the Explore option above the glass */
+.search{
+  position:absolute;z-index:3;left:50%;transform:translateX(-50%);
+  top:calc(18px + env(safe-area-inset-top,0px));
+  width:min(420px,calc(100% - 210px));height:36px;
+  display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:18px;
+  border:1px solid rgba(120,170,255,.5);background:rgba(10,14,26,.7);color:var(--off-white);
+  transition:border-color .2s,box-shadow .2s;
+}
+.search:hover,.search:focus-within{border-color:var(--blue-soft);box-shadow:0 0 18px rgba(45,107,255,.35)}
+.search.nomatch{border-color:rgba(255,140,140,.8)}
+.search svg{width:15px;height:15px;flex:none;color:var(--blue-soft)}
+.search input{
+  flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:none;
+  font:500 16px/1 var(--font);color:var(--off-white);
+}
+.search input::placeholder{color:var(--silver)}
+.search input::-webkit-search-cancel-button{-webkit-appearance:none}
+.explore{
+  position:absolute;z-index:400;left:50%;transform:translateX(-50%);
+  top:max(calc(74px + env(safe-area-inset-top,0px)),calc(40% - var(--cw)*.36 - 96px));
+  display:flex;flex-direction:column;align-items:center;gap:6px;width:min(380px,calc(100% - 32px));padding:10px 18px 12px;border-radius:18px;cursor:pointer;text-align:center;
+  font:600 11px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--white);
+  border:1.5px solid var(--blue-bright);background:linear-gradient(180deg,rgba(45,107,255,.38),rgba(10,20,55,.6));
+  box-shadow:0 0 16px rgba(45,107,255,.35);
+}
+.explore:hover{border-color:var(--blue-soft);box-shadow:0 0 24px rgba(45,107,255,.55)}
+.explore svg{width:12px;height:12px}
+.explore-top{display:inline-flex;align-items:center;gap:8px}
+.explore-txt{font:500 12px/1.4 var(--font);letter-spacing:0;text-transform:none;color:var(--light-silver)}
+.search input:focus-visible,.explore:focus-visible{outline:2px solid var(--blue-bright);outline-offset:3px}
+.search input:focus-visible{outline:0}
+
+/* Explore section: fields to browse, below the glass */
+.exp{
+  position:relative;z-index:1;border-top:1px solid rgba(120,170,255,.25);
+  padding:56px max(20px,env(safe-area-inset-right,0px)) calc(72px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,var(--black),#0a0f1f 55%,var(--black));
+}
+.exp-in{max-width:1000px;margin:0 auto}
+.exp-k{font:600 11px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--blue-soft)}
+.exp h2{margin:12px 0 10px;font:700 clamp(30px,6vw,56px)/1.05 var(--font);color:var(--white)}
+.exp-sub{margin:0;max-width:620px;font:500 15px/1.5 var(--font);color:var(--silver)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.chip{
+  height:44px;padding:0 18px;border-radius:22px;cursor:pointer;
+  font:500 15px/1 var(--font);color:var(--light-silver);
+  border:1px solid rgba(120,170,255,.25);background:rgba(28,28,28,.85);
+  transition:border-color .2s,color .2s,box-shadow .2s;
+}
+.chip:hover{border-color:var(--blue-soft);color:var(--white)}
+.chip[aria-pressed="true"]{
+  color:var(--white);border-color:var(--blue-bright);
+  background:linear-gradient(180deg,rgba(45,107,255,.38),rgba(10,20,55,.6));box-shadow:0 0 16px rgba(45,107,255,.35);
+}
+.chip:focus-visible{outline:2px solid var(--blue-bright);outline-offset:3px}
+.exp-state{margin-top:22px;min-height:20px;font:600 13px/1.4 var(--font);letter-spacing:.04em;color:var(--blue-soft)}
+
+/* theme toggle (top left) */
+.themebtn{
+  position:absolute;z-index:3;top:calc(18px + env(safe-area-inset-top,0px));
+  left:max(16px,env(safe-area-inset-left,0px));
+  width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  color:var(--off-white);border:1px solid rgba(120,170,255,.5);background:rgba(10,14,26,.7);
+}
+.themebtn svg{width:16px;height:16px}
+.themebtn:hover{border-color:var(--blue-soft)}
+.themebtn:focus-visible{outline:2px solid var(--blue-bright);outline-offset:3px}
+
+/* light mode: same layout and blue theme on a light surface */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --black:#EAF1FF;--charcoal:#DCE7FB;--graphite:#CBD9F5;
+  --grey:#8C9AB8;--silver:#51607F;--light-silver:#2F3C5C;--off-white:#0F1A3A;--white:#0A1230;
+  --blue-bright:#2D6BFF;--blue-soft:#1F55D6;
+}
+:root[data-theme="light"] .card{
+  border-color:rgba(45,107,255,.35);
+  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(236,244,255,.8) 40%,rgba(205,222,255,.65)),rgba(255,255,255,.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 30px rgba(60,110,255,.06),0 16px 28px rgba(40,70,140,.25);
+}
+:root[data-theme="light"] .rwrap .card{box-shadow:none}
+:root[data-theme="light"] .pausebtn,
+:root[data-theme="light"] .search,
+:root[data-theme="light"] .themebtn{background:rgba(255,255,255,.78);border-color:rgba(45,107,255,.45)}
+:root[data-theme="light"] .explore,
+:root[data-theme="light"] .c-btn{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(205,222,255,.85));box-shadow:0 0 16px rgba(45,107,255,.22)}
+:root[data-theme="light"] .btn{background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(200,218,255,.85));border-color:rgba(45,107,255,.6);box-shadow:0 0 18px rgba(45,107,255,.2)}
+:root[data-theme="light"] .chip{background:rgba(255,255,255,.8);border-color:rgba(45,107,255,.25)}
+:root[data-theme="light"] .chip[aria-pressed="true"]{background:linear-gradient(180deg,rgba(45,107,255,.22),rgba(255,255,255,.85));border-color:var(--blue-bright)}
+:root[data-theme="light"] .exp{background:linear-gradient(180deg,var(--black),#DCE7FB 55%,var(--black));border-top-color:rgba(45,107,255,.25)}
+
+/* Explore India: map button and atlas */
+.ibtn{position:absolute;z-index:400;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:14px;width:min(380px,calc(100% - 32px));padding:10px 16px;border-radius:18px;cursor:pointer;text-align:left;color:var(--white);font:inherit;border:1.5px solid var(--blue-bright);background:linear-gradient(180deg,rgba(45,107,255,.3),rgba(10,20,55,.65));box-shadow:0 0 18px rgba(45,107,255,.4);transition:box-shadow .25s,transform .25s}
+.ibtn:hover{box-shadow:0 0 28px rgba(45,107,255,.7);transform:translateX(-50%) translateY(-2px)}
+.ibtn svg.mini{width:46px;height:52px;flex:none;filter:drop-shadow(0 0 6px rgba(94,155,255,.9))}
+.ibtn b{display:block;font:700 15px/1.2 var(--font)}.ibtn small{display:block;margin-top:3px;font:500 12px/1.3 var(--font);color:var(--light-silver)}
+:root[data-theme="light"] .ibtn{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(205,222,255,.85))}
+.atlas{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#0b1a3d,#050505 75%);color:var(--off-white);font-family:var(--font);animation:atIn .35s ease}
+.atlas[hidden]{display:none}
+:root[data-theme="light"] .atlas{background:radial-gradient(ellipse at 50% 30%,#fff,#dbe7ff 80%)}
+@keyframes atIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.at-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid rgba(120,170,255,.3)}
+.at-bar b{font:700 17px/1 var(--font);margin-right:auto}
+.at-b,.at-bar input{height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(120,170,255,.5);background:rgba(10,14,26,.6);color:var(--off-white);font:600 12px/1 var(--font);cursor:pointer}
+:root[data-theme="light"] .at-b,:root[data-theme="light"] .at-bar input{background:rgba(255,255,255,.8)}
+.at-bar input{cursor:text;font-size:16px;font-weight:500;width:170px}
+.at-b[aria-pressed="true"],.at-b:hover{border-color:var(--blue-soft);box-shadow:0 0 14px rgba(45,107,255,.5)}
+.at-main{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto}
+@media(min-width:900px){.at-main{flex-direction:row;overflow:hidden}.at-panel{overflow:auto}}
+.at-map{position:relative;flex:1 1 55%;min-height:46vh}
+.at-map svg.big{width:100%;height:100%;display:block;touch-action:manipulation}
+.st{fill:rgba(45,107,255,.22);stroke:#7fb0ff;stroke-width:var(--sw,1);stroke-linejoin:round;cursor:pointer;transition:fill .2s}
+.st:hover{fill:rgba(94,155,255,.65)}
+.st.on{fill:rgba(94,155,255,.75);stroke:#fff}
+.st.cmp{fill:rgba(255,160,60,.55)}
+.utm{fill:#ffb347;stroke:#fff;stroke-width:var(--sw,1);cursor:pointer}
+.at-tip{position:absolute;pointer-events:none;padding:5px 10px;border-radius:10px;font:600 12px/1 var(--font);background:rgba(5,10,30,.9);border:1px solid var(--blue-bright);color:#fff;opacity:0;transition:opacity .15s;z-index:2}
+.at-zoom{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+.at-zoom button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(120,170,255,.6);background:rgba(10,14,26,.7);color:#fff;font-size:18px;cursor:pointer}
+.at-panel{flex:1 1 45%;padding:16px;border-left:1px solid rgba(120,170,255,.25);animation:atIn .35s ease}
+.at-panel h2{margin:0 0 4px;font:700 28px/1.1 var(--font)}
+.at-hd{display:flex;gap:14px;align-items:center}.at-hd svg{width:90px;height:90px;flex:none;filter:drop-shadow(0 0 6px #5E9BFF)}
+.at-sub{color:var(--silver);font:500 14px/1.5 var(--font);margin:4px 0}
+.at-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.at-chips button{height:32px;padding:0 12px;border-radius:16px;border:1px solid rgba(120,170,255,.3);background:rgba(28,28,28,.6);color:var(--light-silver);font:500 12px/1 var(--font);cursor:pointer}
+:root[data-theme="light"] .at-chips button{background:rgba(255,255,255,.8)}
+.at-chips button[aria-pressed="true"]{color:#fff;border-color:var(--blue-bright);background:rgba(45,107,255,.55)}
+.pc{margin:0 0 12px;padding:14px;border-radius:14px;border:1px solid rgba(150,190,255,.35);background:linear-gradient(135deg,rgba(150,190,255,.14),rgba(10,14,26,.6))}
+:root[data-theme="light"] .pc{background:rgba(255,255,255,.75)}
+.pc h3{margin:0 0 6px;font:700 17px/1.2 var(--font);display:flex;align-items:center;gap:10px}
+.pc h3 i{font-style:normal;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:rgba(45,107,255,.3);font-size:20px}
+.pc em{font:600 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--blue-soft);font-style:normal}
+.pc p{margin:6px 0 0;font:400 13px/1.5 var(--font);color:var(--light-silver)}.pc p strong{color:var(--white)}
+.pc a{color:var(--blue-soft);margin-right:10px}.pc small{display:block;margin-top:8px;color:var(--silver);font-size:11px}
+.cmpg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+@media (max-aspect-ratio:9/10){.stage{--cw:clamp(280px,66vw,900px)}}
+@media (max-width:640px){
+  .c-desc{display:none}
+  .c-left{width:62%}
+  .c-art{width:36%}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gChrome" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset=".25" stop-color="#7FA8FF"/>
+      <stop offset=".5" stop-color="#0B1F52"/><stop offset=".75" stop-color="#D6E4FF"/><stop offset="1" stop-color="#2B4C99"/>
+    </linearGradient>
+    <linearGradient id="gChrome2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5F9FF"/><stop offset=".3" stop-color="#2B4C99"/>
+      <stop offset=".55" stop-color="#BFD4FF"/><stop offset="1" stop-color="#0A1530"/>
+    </linearGradient>
+    <radialGradient id="gOrb" cx=".35" cy=".3" r=".8">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#5E9BFF"/><stop offset="1" stop-color="#0A1430"/>
+    </radialGradient>
+    <radialGradient id="gPlat" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#5E9BFF" stop-opacity=".6"/><stop offset="1" stop-color="#2D6BFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<div class="hero" id="hero">
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<button class="pausebtn" id="pause" aria-pressed="false">Pause</button>
+<button class="themebtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+
+<div class="search" id="search" role="search">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+  <input id="q" type="search" placeholder="Search" aria-label="Search" autocomplete="off" enterkeyhint="search">
+</div>
+
+<section class="stage" id="stage" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Switch the Glitch. Drag or use the arrow keys to turn.">
+  <button class="explore" id="explore" type="button"><span class="explore-top">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="explore-txt">Major problems across India: health, education, jobs, farming, environment and more.</span></button>
+  <div class="scene"><div id="orbit"></div></div>
+  <div class="probe" id="probe"></div>
+</section>
+
+<div class="sr" id="live" aria-live="polite"></div>
+
+<footer class="ctl">
+  <button class="btn" id="prev" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+  <div class="dots" id="dots"></div>
+  <button class="btn" id="next" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+</footer>
+<button class="ibtn" id="atlasBtn" type="button" aria-label="Explore India state by state"><svg class="mini" viewBox="0 0 10 10"><path d="M5 .5L8 4 6.5 9.5 3.5 9.5 2 4z" fill="rgba(45,107,255,.35)" stroke="#9fc3ff" stroke-width=".3"/></svg><span><b>Explore India</b><small>Discover the challenges of every state.</small></span></button>
+</div>
+
+<section class="exp" id="exp" aria-labelledby="expH">
+  <div class="exp-in">
+    <div class="exp-k">Explore</div>
+    <h2 id="expH">Problems in every field</h2>
+    <p class="exp-sub">Pick a field to explore the problems people face across India. Use the search bar to find a field quickly.</p>
+    <div class="chips" id="chips" role="group" aria-label="Fields"></div>
+    <div class="exp-state" id="expState" aria-live="polite"></div>
+  </div>
+</section>
+
+<div class="atlas" id="atlas" hidden role="dialog" aria-modal="true" aria-label="Explore India">
+  <div class="at-bar"><button class="at-b" id="atBack" type="button">← Back</button><b>Explore India</b>
+    <input id="atQ" list="atList" placeholder="Search a state" aria-label="Search a state" autocomplete="off"><datalist id="atList"></datalist>
+    <button class="at-b" id="atCmp" type="button" aria-pressed="false">Compare states</button><button class="at-b" id="atX" type="button" aria-label="Close">✕</button></div>
+  <div class="at-main"><div class="at-map" id="atMap"><div class="at-tip" id="atTip"></div>
+    <div class="at-zoom"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">−</button><button id="zr" aria-label="Reset">⟲</button></div></div>
+    <div class="at-panel" id="atPanel"></div></div>
+</div>
+<script>window.Highcharts={maps:{}};</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/custom/in-all-disputed.js"></script>
+<script>
+(function(){
+  var $ = function(i){ return document.getElementById(i); };
+  var atlas = $('atlas'), mapEl = $('atMap'), panel = $('atPanel'), tip = $('atTip'), btn = $('atlasBtn');
+  var S = {cgwb:['CGWB','https://cgwb.gov.in'], jjm:['Jal Jeevan Mission','https://jaljeevanmission.gov.in'], imd:['IMD','https://mausam.imd.gov.in'], sac:['ISRO SAC Desertification Atlas','https://www.sac.gov.in'], plfs:['MoSPI PLFS','https://mospi.gov.in'], cpcb:['CPCB','https://cpcb.nic.in'], mohua:['MoHUA','https://mohua.gov.in'], mohfw:['MoHFW','https://main.mohfw.gov.in'], niti:['NITI Aayog','https://www.niti.gov.in'], ncrb:['NCRB (ADSI)','https://ncrb.gov.in'], agri:['Ministry of Agriculture','https://agricoop.gov.in'], census:['Census of India','https://censusindia.gov.in'], morth:['MoRTH','https://morth.nic.in'], udise:['UDISE+','https://udiseplus.gov.in'], ndma:['NDMA','https://ndma.gov.in'], gsi:['Geological Survey of India','https://www.gsi.gov.in'], cwc:['Central Water Commission','https://cwc.gov.in'], ksdma:['Kerala SDMA','https://sdma.kerala.gov.in']};
+  var IC = {Environment:'🌿', Education:'🎓', Healthcare:'🩺', Employment:'💼', Agriculture:'🌾', Infrastructure:'🏗️', 'Social Issues':'🤝'};
+  var CATS = ['All','Environment','Education','Healthcare','Employment','Agriculture','Infrastructure','Social Issues'];
+  var INFO = 'Andaman and Nicobar Islands|Port Blair|Island territory in the Bay of Bengal.;Andhra Pradesh|Amaravati|Coastal state in southern India.;Arunachal Pradesh|Itanagar|Eastern Himalayan border state.;Assam|Dispur|Brahmaputra valley state in the northeast.;Bihar|Patna|Densely populated Gangetic plain state.;Chandigarh|Chandigarh|Planned city shared by Punjab and Haryana.;Chhattisgarh|Raipur|Central state rich in forests and minerals.;Dadra and Nagar Haveli and Daman and Diu|Daman|Union Territory on the western coast.;Delhi|New Delhi|The national capital territory.;Goa|Panaji|Small coastal state known for tourism.;Gujarat|Gandhinagar|Western state with a long coastline.;Haryana|Chandigarh|Northern farming and industrial state.;Himachal Pradesh|Shimla|Himalayan hill state.;Jammu and Kashmir|Srinagar (summer), Jammu (winter)|Himalayan Union Territory in the north.;Jharkhand|Ranchi|Eastern mineral-rich plateau state.;Karnataka|Bengaluru|Southern state with a major technology hub.;Kerala|Thiruvananthapuram|Southwestern coastal state on the Western Ghats.;Ladakh|Leh|High-altitude Union Territory in the Himalaya.;Lakshadweep|Kavaratti|Coral island Union Territory in the Arabian Sea.;Madhya Pradesh|Bhopal|Large state in central India.;Maharashtra|Mumbai|Western state with India’s financial capital.;Manipur|Imphal|Northeastern hill state.;Meghalaya|Shillong|Rainy northeastern hill state.;Mizoram|Aizawl|Northeastern hill state bordering Myanmar.;Nagaland|Kohima|Northeastern hill state.;Odisha|Bhubaneswar|Eastern coastal state on the Bay of Bengal.;Puducherry|Puducherry|Union Territory with enclaves on the southeast coast.;Punjab|Chandigarh|Northwestern farming state.;Rajasthan|Jaipur|Largest state by area, home to the Thar desert.;Sikkim|Gangtok|Small Himalayan state.;Tamil Nadu|Chennai|Southern state with a long coastline.;Telangana|Hyderabad|Southern state on the Deccan plateau.;Tripura|Agartala|Small northeastern state bordering Bangladesh.;Uttar Pradesh|Lucknow|India’s most populous state.;Uttarakhand|Dehradun|Himalayan state in the north.;West Bengal|Kolkata|Eastern state from the Himalaya to the Bay of Bengal.';
+  var AL = {orissa:'odisha', uttaranchal:'uttarakhand', nctofdelhi:'delhi', dadraandnagarhaveli:'dadraandnagarhavelianddamananddiu', damananddiu:'dadraandnagarhavelianddamananddiu', andamanandnicobar:'andamanandnicobarislands'};
+  var D = {}; INFO.split(';').forEach(function(r){ r = r.split('|'); D[key(r[0])] = {n:r[0], cap:r[1], intro:r[2]}; });
+  function key(s){ s = s.toLowerCase().replace(/&/g,'and').replace(/[^a-z]/g,''); return AL[s] || s; }
+  var P = {
+    rajasthan:[['Water scarcity','Environment','Much of the state is arid with low, erratic rain and heavy reliance on groundwater.','Dry climate plus groundwater use above natural recharge in many areas.','Villages depend on tankers; drinking water and farming both suffer.','Rainwater harvesting, efficient irrigation, tighter groundwater regulation.',['cgwb','jjm']],['Drought and desertification','Environment','Western districts face recurring drought and spreading degraded, sandy land.','Low rainfall, overgrazing, wind erosion and land degradation.','Crop failure, fodder shortage and lost livelihoods.','Shelterbelts, watershed work, drought-tolerant crops, pasture management.',['imd','sac']],['Unemployment','Employment','Many young people lack enough local non-farm jobs.','Limited industry outside a few hubs and heavy dependence on rain-fed farming.','Seasonal migration and uncertain incomes.','Skilling, small-business and tourism jobs, rural non-farm enterprise.',['plfs']]],
+    delhi:[['Air pollution','Environment','Winter smog regularly pushes air quality into unhealthy ranges.','Vehicle and construction emissions, crop-residue burning in the region and winter weather that traps pollutants.','Breathing problems, especially for children and the elderly.','Cleaner transport, dust control, regional coordination on stubble burning.',['cpcb']],['Traffic congestion','Infrastructure','Roads are crowded, with long peak-hour delays.','Rapid growth in private vehicles across the wider city region.','Lost time, fuel cost and added pollution.','Metro and bus expansion, last-mile links, better parking and traffic management.',['morth','mohua']],['Waste management','Infrastructure','Large volumes of waste strain landfills and collection systems.','A very large population and limited processing capacity.','Odour, health risks and pressure on neighbourhoods near landfills.','Source segregation, composting and recycling, scientific landfill remediation.',['mohua']]],
+    maharashtra:[['Farmer distress','Agriculture','Many farmers face debt and unstable incomes, especially in rain-fed regions.','Erratic rain, input costs, price swings and limited irrigation.','Financial stress on farm families and rural distress.','Crop insurance, irrigation, fair-price access, income support.',['ncrb','agri']],['Urban overcrowding','Infrastructure','Large cities have crowded housing and transport.','Heavy migration towards a few urban centres.','Slums, long commutes and strained services.','Affordable housing, mass transit, planned growth of smaller cities.',['census','mohua']],['Water scarcity','Environment','Some regions, notably Marathwada, face repeated water shortages.','Uneven rainfall and dependence on groundwater and a few reservoirs.','Tanker dependence and hardship in dry years.','Watershed management, efficient irrigation, water-saving crops.',['cwc','cgwb']]],
+    bihar:[['Migration for work','Employment','Many workers leave the state to find jobs elsewhere.','Limited local industry and employment opportunities.','Families split up and local economies lose working-age people.','Industrial and service investment, skilling, local job creation.',['census','plfs']],['Unemployment','Employment','Finding stable, well-paid work is a major challenge.','A young population with limited formal job creation.','Low household incomes and dependence on remittances.','Vocational training, small-business support, more private investment.',['plfs','niti']],['Education challenges','Education','Gaps in school quality, access and retention persist.','Large student numbers, teacher gaps and infrastructure limits.','Weaker learning outcomes and fewer opportunities.','Teacher recruitment and training, school infrastructure, learning support.',['udise','niti']]],
+    uttarpradesh:[['Air pollution','Environment','Many cities in the Gangetic plain see poor air quality, especially in winter.','Vehicle and industrial emissions, burning, dust and weather that traps pollutants.','Respiratory illness and reduced quality of life.','Cleaner fuels and transport, emission controls, regional action plans.',['cpcb']],['Healthcare access','Healthcare','Access to quality care is uneven, particularly in rural areas.','A very large population and gaps in facilities and health workers.','Long travel to hospitals and reliance on costly private care.','Stronger primary care, more doctors and staff, telemedicine.',['mohfw','niti']],['Unemployment','Employment','Many young people struggle to find stable jobs.','A very large workforce and limited formal job creation.','Migration for work and low incomes.','Skilling, manufacturing and small-business growth.',['plfs']]],
+    kerala:[['Flooding','Environment','Heavy monsoon rain can cause severe floods.','Intense rainfall, dense settlement and altered river and land use.','Displacement, damaged homes and lost livelihoods.','Early warning, flood-zone planning, river and reservoir management.',['ndma','cwc','ksdma']],['Landslides','Environment','Hilly districts are prone to landslides in heavy rain.','Steep slopes, intense rain and slope-changing construction.','Loss of life and homes, and blocked roads.','Hazard mapping, restricting risky construction, early warning.',['gsi','ksdma']],['Waste management','Infrastructure','Handling growing waste is a challenge in a densely settled state.','High population density and limited land for disposal.','Pollution of water bodies and public health risk.','Decentralised composting, segregation and recycling.',['mohua']]]
+  };
+  var feats = [], bb, vb, cur = null, cmp = false, pair = [], cat = 'All', svg, ix = {};
+  var UTS = ['andamanandnicobarislands','chandigarh','dadraandnagarhavelianddamananddiu','delhi','jammuandkashmir','ladakh','lakshadweep','puducherry'];
+  function ringD(r){ return 'M' + r.map(function(p){ return p[0] + ',' + (-p[1]); }).join('L') + 'Z'; }
+  function geoD(g){ var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates; return polys.map(function(pl){ return pl.map(ringD).join(''); }).join(''); }
+  function box(g){ var a = 1e9, b = 1e9, c = -1e9, d = -1e9; (function w(x){ if (typeof x[0] === 'number'){ if (x[0] < a) a = x[0]; if (x[0] > c) c = x[0]; if (-x[1] < b) b = -x[1]; if (-x[1] > d) d = -x[1]; } else x.forEach(w); })(g.coordinates); return [a, b, c - a, d - b]; }
+  function load(){
+    var d = Object.keys(Highcharts.maps).map(function(k){ return Highcharts.maps[k]; })[0];
+    if (d && d.type === 'Topology' && window.topojson){ var o = d.objects; d = topojson.feature(d, o[Object.keys(o)[0]]); }
+    if (!d || !d.features){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load. Check your connection and reload.</p>'); return; }
+    feats = d.features.filter(function(f){ return f.geometry; });
+    feats.forEach(function(f){ f._d = geoD(f.geometry); f._b = box(f.geometry); f._k = key(f.properties.name || ''); });
+    var all = feats.map(function(f){ return f._b; });
+    bb = [Math.min.apply(0, all.map(function(b){ return b[0]; })), Math.min.apply(0, all.map(function(b){ return b[1]; }))];
+    bb[2] = Math.max.apply(0, all.map(function(b){ return b[0] + b[2]; })) - bb[0]; bb[3] = Math.max.apply(0, all.map(function(b){ return b[1] + b[3]; })) - bb[1];
+    var pad = bb[2] * .04; bb = [bb[0] - pad, bb[1] - pad, bb[2] + 2 * pad, bb[3] + 2 * pad]; vb = bb.slice();
+    feats.forEach(function(f, i){ var k = key(info(f).n); if (!(k in ix)) ix[k] = i; });
+    Object.keys(D).forEach(function(k){ if (!(k in ix)){ feats.push({properties:{name:D[k].n}, _d:'', _b:null, _k:k}); ix[k] = feats.length - 1; } });
+    var paths = feats.map(function(f, i){ return f._b ? '<path class="st" data-i="' + i + '" d="' + f._d + '"><title>' + info(f).n + '</title></path>' : ''; }).join('');
+    var mk = ['chandigarh','delhi','dadraandnagarhavelianddamananddiu','lakshadweep','puducherry'].map(function(k){ var f = feats[ix[k]]; if (!f || !f._b) return ''; return '<circle class="utm" data-i="' + ix[k] + '" cx="' + (f._b[0] + f._b[2] / 2) + '" cy="' + (f._b[1] + f._b[3] / 2) + '" r="' + bb[2] / 90 + '"><title>' + f.properties.name + '</title></circle>'; }).join('');
+    mapEl.insertAdjacentHTML('afterbegin', '<svg class="big" id="atSvg" viewBox="' + vb.join(' ') + '" role="group" aria-label="Map of India">' + paths + mk + '</svg>');
+    svg = $('atSvg'); svg.style.setProperty('--sw', bb[2] / 450);
+    btn.querySelector('.mini').outerHTML = '<svg class="mini" viewBox="' + bb.join(' ') + '">' + feats.map(function(f){ return '<path d="' + f._d + '" fill="rgba(45,107,255,.35)" stroke="#9fc3ff" stroke-width="' + bb[2] / 120 + '"/>'; }).join('') + '</svg>';
+    $('atList').innerHTML = feats.map(function(f){ return '<option value="' + info(f).n + '">'; }).join('');
+    svg.addEventListener('click', function(e){ var p = e.target.closest('.st,.utm'); if (p) pick(+p.dataset.i); });
+    svg.addEventListener('mousemove', function(e){ var p = e.target.closest('.st,.utm'), r = mapEl.getBoundingClientRect(); if (!p){ tip.style.opacity = 0; return; } tip.textContent = info(feats[+p.dataset.i]).n; tip.style.opacity = 1; tip.style.left = e.clientX - r.left + 12 + 'px'; tip.style.top = e.clientY - r.top + 12 + 'px'; });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity = 0; });
+  }
+  function tween(to){ var from = vb.slice(), t0 = performance.now(); (function s(t){ var k = Math.min(1, (t - t0) / 450); k = k * k * (3 - 2 * k); vb = from.map(function(v, i){ return v + (to[i] - v) * k; }); svg.setAttribute('viewBox', vb.join(' ')); if (k < 1) requestAnimationFrame(s); })(t0); }
+  function zoom(f){ var cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2, w = vb[2] / f, h = vb[3] / f; tween([cx - w / 2, cy - h / 2, w, h]); }
+  function zoomTo(b){ if (!b){ tween(bb.slice()); return; } var m = Math.max(b[2], b[3] * (bb[2] / bb[3])) * 1.5, w = Math.max(m, bb[2] / 6), h = w * bb[3] / bb[2]; tween([b[0] + b[2] / 2 - w / 2, b[1] + b[3] / 2 - h / 2, w, h]); }
+  function info(f){ var k = f._k, x = D[k]; if (!x){ for (var q in D){ if (q.indexOf(k) === 0 || k.indexOf(q) === 0) x = D[q]; } } if (!x){ var nm = (f.properties.name || '').toLowerCase(); if (/aksai|china/.test(nm)) x = D.ladakh; else if (/gilgit|baltistan|azad|pakistan|kashmir|pok/.test(nm)) x = D.jammuandkashmir; }
+    return x || {n:f.properties.name, cap:'', intro:''}; }
+  function probs(f){ var k = info(f).n ? key(info(f).n) : f._k; return P[k] || []; }
+  function sync(){ var kk = function(i){ return i == null ? null : key(info(feats[i]).n); }, ck = kk(cur), pk = pair.map(kk); [].forEach.call(svg.querySelectorAll('.st'), function(p){ var k2 = kk(+p.dataset.i); p.classList.toggle('on', !cmp && ck !== null && ck === k2); p.classList.toggle('cmp', cmp && pk.indexOf(k2) > -1); }); }
+  function pick(i){
+    if (cmp){ var j = pair.indexOf(i); if (j > -1) pair.splice(j, 1); else { pair.push(i); if (pair.length > 2) pair.shift(); } sync(); showCmp(); return; }
+    cur = i; cat = 'All'; sync(); zoomTo(feats[i]._b); show(); panel.scrollTop = 0;
+  }
+  function card(p){ return '<article class="pc"><h3><i>' + (IC[p[1]] || '•') + '</i><span><em>' + p[1] + '</em><br>' + p[0] + '</span></h3><p><strong>What:</strong> ' + p[2] + '</p><p><strong>Why it happens:</strong> ' + p[3] + '</p><p><strong>Effect on people:</strong> ' + p[4] + '</p><p><strong>Possible solutions:</strong> ' + p[5] + '</p><small>Sources: ' + p[6].map(function(s){ return '<a href="' + S[s][1] + '" target="_blank" rel="noopener">' + S[s][0] + '</a>'; }).join('') + '<br>Last updated: 12 Nov 2026. A qualitative summary, so check the sources above for current figures.</small></article>'; }
+  function show(){
+    var f = feats[cur], x = info(f), ps = probs(f).filter(function(p){ return cat === 'All' || p[1] === cat; });
+    var out = '<div class="at-hd">' + (f._b ? '<svg viewBox="' + f._b.join(' ') + '"><path d="' + f._d + '" fill="rgba(94,155,255,.45)" stroke="#fff" stroke-width="' + f._b[2] / 60 + '"/></svg>' : '') + '<div><h2>' + x.n + '</h2><div class="at-sub">Capital: ' + x.cap + '</div></div></div><p class="at-sub">' + x.intro + '</p>';
+    out += '<div class="at-chips" role="group" aria-label="Filter by category">' + CATS.map(function(c){ return '<button type="button" aria-pressed="' + (c === cat) + '">' + c + '</button>'; }).join('') + '</div>';
+    out += probs(f).length ? (ps.length ? ps.map(card).join('') : '<p class="at-sub">No problems listed in this category for ' + x.n + '.</p>') : '<p class="at-sub">Researched problem cards for ' + x.n + ' are not added yet.</p>';
+    panel.innerHTML = out + '<button class="at-b" id="another" type="button">Explore another state</button>';
+    $('another').onclick = back;
+    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ cat = b.textContent; show(); }; });
+  }
+  function showCmp(){
+    if (pair.length < 2){ panel.innerHTML = '<h2>Compare states</h2><p class="at-sub">Tap two states on the map. Selected: ' + (pair.length ? info(feats[pair[0]]).n : 'none') + '.</p>'; return; }
+    panel.innerHTML = '<h2>Compare states</h2><div class="cmpg">' + pair.map(function(i){ var f = feats[i], ps = probs(f); return '<div><h3 style="margin:8px 0">' + info(f).n + '</h3>' + (ps.length ? ps.map(function(p){ return '<div class="pc"><em>' + p[1] + '</em><h3 style="font-size:14px">' + p[0] + '</h3><p>' + p[2] + '</p></div>'; }).join('') : '<p class="at-sub">Not added yet.</p>') + '</div>'; }).join('') + '</div>';
+  }
+  function hint(){
+    var h = function(a){ return a.map(function(k){ return '<button type="button" data-k="' + k + '">' + D[k].n + '</button>'; }).join(''); };
+    var ks = Object.keys(D), ut = ks.filter(function(k){ return UTS.indexOf(k) > -1; }), st = ks.filter(function(k){ return UTS.indexOf(k) < 0; });
+    panel.innerHTML = '<h2>Explore India</h2><p class="at-sub">Tap any state or Union Territory on the map, or pick one below. Orange dots mark small Union Territories. You can also search by name or turn on Compare states.</p><h3>States (' + st.length + ')</h3><div class="at-chips">' + h(st) + '</div><h3>Union Territories (' + ut.length + ')</h3><div class="at-chips">' + h(ut) + '</div>';
+    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ var i = ix[b.dataset.k]; if (i != null) pick(i); }; });
+  }
+  function back(){ cur = null; pair = []; cmp = false; $('atCmp').setAttribute('aria-pressed', 'false'); sync(); tween(bb.slice()); hint(); mapEl.scrollIntoView({behavior:'smooth', block:'start'}); }
+  function open(){
+    atlas.hidden = false;
+    if (!svg){
+      if (Object.keys(Highcharts.maps).length) load();
+      else { var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/in-all.js'; sc.onload = load; sc.onerror = load; document.head.appendChild(sc); }
+    }
+    hint();
+  }
+  btn.addEventListener('click', open);
+  $('atX').onclick = function(){ atlas.hidden = true; };
+  $('atBack').onclick = back;
+  $('atCmp').onclick = function(){ cmp = !cmp; pair = []; cur = null; this.setAttribute('aria-pressed', cmp); sync(); if (cmp) showCmp(); else hint(); tween(bb.slice()); };
+  $('zi').onclick = function(){ zoom(1.5); }; $('zo').onclick = function(){ zoom(1 / 1.5); }; $('zr').onclick = function(){ tween(bb.slice()); };
+  $('atQ').addEventListener('change', function(){ var q = this.value.trim().toLowerCase(), i = -1; feats.forEach(function(f, n){ if (i < 0 && (f.properties.name + ' ' + info(f).n).toLowerCase().indexOf(q) > -1) i = n; }); if (i > -1){ pick(i); this.blur(); } });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !atlas.hidden) atlas.hidden = true; });
+  load = (function(l){ return function(){ try { l(); } catch (err){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load.</p>'); } }; })(load);
+})();
+</script>
+
+<script>
+(function(){
+  var N = 12, STEP = 360 / N, S = 4, TILT = 9;
+
+  var slides = [
+    {pill:'Featured', t:'Switch the Glitch', s:'Explore. Learn. Grow.', d:'Dive into a world of knowledge with cutting-edge innovation.'},
+    {pill:'Trending', t:'Next-Gen Technology', s:'Shape the future with AI.', d:'Tools and ideas that move faster than the noise.'},
+    {pill:'Hot',      t:'Innovation Hub',      s:'Ideas. Impact. Growth.',  d:'A space where bold ideas turn into real results.'},
+    {pill:'New',      t:'Creative Studio',     s:'Design. Build. Launch.',  d:'Craft something distinctive and ship it with confidence.'}
+  ];
+
+  var icons = [
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.3 2-4.5 0 2 1 3 2 3 0-3-1-5.5 1-8.5zm0 20a7 7 0 0 0 7-7c0 4-3 6-7 6z" opacity=".95"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>'
+  ];
+
+  var BM = '<svg class="bm" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2 2h12v16l-6-4.5L2 18z"/></svg>';
+  var CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
+  /* greyscale 3D-looking objects, one per slide */
+  function platform(){
+    return '<ellipse cx="100" cy="178" rx="72" ry="12" fill="url(#gPlat)"/>' +
+      '<ellipse cx="100" cy="173" rx="48" ry="7.5" fill="#0A1430" stroke="#7FA8FF" stroke-opacity=".8"/>' +
+      '<ellipse cx="100" cy="170" rx="48" ry="7.5" fill="none" stroke="#BFD4FF" stroke-opacity=".5"/>';
+  }
+  function cube(cx, cy, s, k){
+    var a = s * .866, h = s * .5, o = k ? .72 : 1;
+    return '<g opacity="'+o+'" stroke="#FFFFFF" stroke-opacity=".55" stroke-width=".8" stroke-linejoin="round">' +
+      '<polygon points="'+cx+','+(cy - s)+' '+(cx + a)+','+(cy - h)+' '+cx+','+cy+' '+(cx - a)+','+(cy - h)+'" fill="#EAF1FF"/>' +
+      '<polygon points="'+(cx - a)+','+(cy - h)+' '+cx+','+cy+' '+cx+','+(cy + s)+' '+(cx - a)+','+(cy + h)+'" fill="#2B4C99"/>' +
+      '<polygon points="'+cx+','+cy+' '+(cx + a)+','+(cy - h)+' '+(cx + a)+','+(cy + h)+' '+cx+','+(cy + s)+'" fill="#5E8BE8"/></g>';
+  }
+  function art(k){
+    var body = '';
+    if (k === 0){
+      body = '<g transform="translate(100 90) rotate(-24)">' +
+        '<ellipse rx="80" ry="38" fill="none" stroke="url(#gChrome)" stroke-width="13"/>' +
+        '<ellipse rx="80" ry="38" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.4" transform="translate(0 -5)"/>' +
+        '<ellipse rx="68" ry="30" transform="rotate(16)" fill="none" stroke="url(#gChrome2)" stroke-width="9"/>' +
+        '<ellipse rx="68" ry="30" transform="rotate(16) translate(0 -4)" fill="none" stroke="#FFFFFF" stroke-opacity=".4" stroke-width="1"/></g>';
+    } else if (k === 1){
+      body = '<g stroke="#FFFFFF" stroke-opacity=".55" stroke-width=".8" stroke-linejoin="round">' +
+        '<polygon points="100,16 62,78 100,78" fill="#BFD4FF"/>' +
+        '<polygon points="100,16 138,78 100,78" fill="#F5F9FF"/>' +
+        '<polygon points="62,78 100,78 100,152" fill="#2B4C99"/>' +
+        '<polygon points="138,78 100,78 100,152" fill="#5E9BFF"/>' +
+        '<polygon points="62,78 82,78 100,152" fill="#0B1F52" fill-opacity=".6"/>' +
+        '<polygon points="118,78 138,78 100,152" fill="#0A1430" fill-opacity=".5"/>' +
+        '<polygon points="82,78 100,16 100,78" fill="#FFFFFF" fill-opacity=".5"/></g>';
+    } else if (k === 2){
+      var s = 22, pts = [[0,0,0],[1,0,0],[0,1,0],[0,0,1],[1,1,0],[1,0,1],[0,1,1],[0,0,2],[1,1,1]];
+      pts.sort(function(a, b){ return (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]); });
+      for (var i = 0; i < pts.length; i++){
+        var p = pts[i];
+        body += cube(100 + (p[0] - p[1]) * s * .866, 112 + (p[0] + p[1]) * s * .5 - p[2] * s, s, (i * 7) % 3 === 0);
+      }
+    } else {
+      body = '<g transform="translate(100 96) rotate(-18)">' +
+        '<path d="M-82 0A82 22 0 0 1 82 0" fill="none" stroke="url(#gChrome)" stroke-width="6"/>' +
+        '<circle cx="0" cy="-4" r="48" fill="url(#gOrb)" stroke="#FFFFFF" stroke-opacity=".35" stroke-width=".8"/>' +
+        '<path d="M-82 0A82 22 0 0 0 82 0" fill="none" stroke="url(#gChrome)" stroke-width="6"/>' +
+        '<circle cx="76" cy="-8" r="5" fill="#A9C7FF"/></g>';
+    }
+    return '<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + body + platform() + '</svg>';
+  }
+
+  function slideOf(j){ return (S - (j % S)) % S; }
+
+  function inner(k){
+    var d = slides[k];
+    return '<div class="card"><div class="content">' +
+      '<div class="c-left">' +
+        '<span class="pillx">'+icons[k]+d.pill+'</span>' +
+        '<h3 class="c-title">'+d.t+'</h3>' +
+        '<p class="c-sub">'+d.s+'</p>' +
+        '<p class="c-desc">'+d.d+'</p>' +
+        '<span class="c-btn">Explore Now '+CHEV+'</span>' +
+      '</div>' +
+      '<div class="c-art">'+art(k)+'</div>' + BM +
+      '</div></div>';
+  }
+
+  var orbit = document.getElementById('orbit');
+  var dotsEl = document.getElementById('dots');
+  var live = document.getElementById('live');
+  var wraps = [], halos = [], rwraps = [], dots = [];
+
+  for (var j = 0; j < N; j++){
+    var k = slideOf(j);
+    var rw = document.createElement('div');
+    rw.className = 'rwrap'; rw.setAttribute('aria-hidden', 'true');
+    rw.innerHTML = inner(k);
+    orbit.appendChild(rw);
+    var w = document.createElement('div');
+    w.className = 'wrap';
+    w.innerHTML = inner(k) + '<div class="halo"></div>';
+    orbit.appendChild(w);
+    wraps.push(w); rwraps.push(rw); halos.push(w.lastChild);
+  }
+  for (var s = 0; s < S; s++){
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Show ' + slides[s].t);
+    (function(idx){ b.addEventListener('click', function(){ goSlide(idx); }); })(s);
+    dotsEl.appendChild(b);
+    dots.push(b);
+  }
+
+  var stage = document.getElementById('stage');
+  var probe = document.getElementById('probe');
+  var rot = 0, kick = 0, extra = 0, AUTO = 6, paused = false, dragging = false, active = -1, holdUntil = 0, DWELL = 2500, prevD = 0;
+
+  function norm(a){ a = ((a % 360) + 360) % 360; return a > 180 ? a - 360 : a; }
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+  function goSlot(j){ kick += -norm(j * STEP + rot); }
+  function goSlide(s){
+    var best = 0, bd = 1e9;
+    for (var j = 0; j < N; j++){
+      if (slideOf(j) !== s) continue;
+      var d = Math.abs(norm(j * STEP + rot));
+      if (d < bd){ bd = d; best = j; }
+    }
+    goSlot(best);
+  }
+  function next(){ goSlot((active - 1 + N) % N); }
+  function prev(){ goSlot((active + 1) % N); }
+
+  /* camera numbers shared by the cards and the canvas floor */
+  var geo = {c:300, R:468, Sz:281, P:1500, F:106};
+  function measure(){
+    var c = probe.offsetWidth || 300;
+    geo.c = c; geo.R = c * 1.56; geo.Sz = geo.R * .6; geo.P = c * 5; geo.F = c * .28 + 22;
+  }
+  measure();
+
+  var hiddenW = [], hiddenR = [];
+  function render(){
+    var best = -2, bi = 0;
+    var pre = 'perspective(' + geo.P.toFixed(1) + 'px) translateZ(' + geo.Sz.toFixed(1) + 'px) rotateX(' + TILT + 'deg) ';
+    var post = ' translateZ(' + (-geo.R).toFixed(1) + 'px) scale(';
+    var mirror = 'translateY(' + (2 * geo.F).toFixed(1) + 'px) scaleY(-1) ';
+    for (var i = 0; i < N; i++){
+      var d = norm(i * STEP + rot);
+      var c = Math.cos(d * Math.PI / 180);
+      if (c > best){ best = c; bi = i; }
+      var el = wraps[i], rl = rwraps[i];
+      if (c < -.2){
+        if (!hiddenW[i]){ el.style.display = 'none'; rl.style.display = 'none'; hiddenW[i] = true; hiddenR[i] = true; }
+        continue;
+      }
+      if (hiddenW[i]){ el.style.display = ''; hiddenW[i] = false; }
+      var a = Math.abs(d);
+      var sc = (.4 + .6 * Math.exp(-Math.pow(a / 32, 2))).toFixed(4);
+      var act = Math.pow(Math.max(0, c), 8);
+      var v = clamp((c + .2) / .6, 0, 1);
+      v = v * v * (3 - 2 * v);
+      /* slide neighbours outward so two cards never touch while they swap places */
+      var u = clamp(a / 26, 0, 1);
+      var off = (d > 0 ? -1 : 1) * geo.c * .2 * u * u * (3 - 2 * u);
+      var rot3 = 'rotateY(' + d.toFixed(2) + 'deg)' + post.replace('scale(', 'translateX(' + off.toFixed(1) + 'px) scale(') + sc + ')';
+      el.style.transform = pre + rot3;
+      el.style.zIndex = 200 + Math.round((1 - c) * 50);
+      el.style.opacity = v.toFixed(3);
+      halos[i].style.opacity = act.toFixed(3);
+      if (a > 72){
+        if (!hiddenR[i]){ rl.style.display = 'none'; hiddenR[i] = true; }
+      } else {
+        if (hiddenR[i]){ rl.style.display = ''; hiddenR[i] = false; }
+        rl.style.transform = pre + mirror + rot3;
+        rl.style.zIndex = Math.round((1 - c) * 50);
+        rl.style.opacity = (v * (.35 + .65 * act)).toFixed(3);
+      }
+    }
+    if (bi !== active){
+      active = bi;
+      var sl = slideOf(bi);
+      for (var q = 0; q < S; q++) dots[q].setAttribute('aria-current', q === sl ? 'true' : 'false');
+      live.textContent = slides[sl].t;
+    }
+  }
+
+  /* drag to turn, with inertia */
+  var lastX = 0, lastT = 0;
+  function degPerPx(){ return STEP / (.75 * geo.c); }
+  stage.addEventListener('pointerdown', function(e){
+    dragging = true; lastX = e.clientX; lastT = performance.now(); extra = 0;
+    stage.classList.add('drag');
+    try { stage.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  stage.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    var now = performance.now(), dx = e.clientX - lastX, dt = Math.max(.008, (now - lastT) / 1000);
+    var dg = -dx * degPerPx();
+    rot += dg;
+    extra = clamp(.7 * extra + .3 * (dg / dt), -240, 240);
+    lastX = e.clientX; lastT = now;
+  });
+  function endDrag(){ dragging = false; stage.classList.remove('drag'); }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+
+  stage.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight'){ next(); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'){ prev(); e.preventDefault(); }
+  });
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+  var pauseBtn = document.getElementById('pause');
+  function syncPause(){ pauseBtn.textContent = paused ? 'Play' : 'Pause'; pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false'); }
+  pauseBtn.addEventListener('click', function(){ paused = !paused; syncPause(); });
+  syncPause();
+
+  /* ---------- background canvas: glow, floor, ribbons, rings ---------- */
+  var canvas = document.getElementById('bg');
+  var ctx = canvas.getContext('2d');
+  var bgC = document.createElement('canvas'), vgC = document.createElement('canvas');
+  var W = 0, H = 0, dpr = 1;
+
+  /* light / dark: saved choice, dark by default */
+  var LIGHT = false;
+  try { LIGHT = localStorage.getItem('stg-theme') === 'light'; } catch(err){}
+  document.documentElement.setAttribute('data-theme', LIGHT ? 'light' : 'dark');
+  function T(d, l){ return LIGHT ? l : d; }
+  function pc(p){ return LIGHT ? (p.c === '255,255,255' ? '45,107,255' : (p.c === '169,199,255' ? '70,120,230' : '30,80,200')) : p.c; }
+  function ell(g, cx, cy, rx, ry, stops){
+    g.save(); g.translate(cx, cy); g.scale(1, ry / rx);
+    var gr = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+    for (var i = 0; i < stops.length; i++) gr.addColorStop(stops[i][0], stops[i][1]);
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rx, 0, Math.PI * 2); g.fill(); g.restore();
+  }
+  function buildStatic(){
+    bgC.width = vgC.width = canvas.width; bgC.height = vgC.height = canvas.height;
+    var b = bgC.getContext('2d'); b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    b.fillStyle = T('#050505', '#EAF1FF'); b.fillRect(0, 0, W, H);
+    var lg = b.createLinearGradient(0, 0, 0, H);
+    lg.addColorStop(0, T('#0A1022', '#F6F9FF')); lg.addColorStop(.55, T('#050505', '#DCE7FB')); lg.addColorStop(1, T('#050505', '#DCE7FB'));
+    b.fillStyle = lg; b.fillRect(0, 0, W, H);
+    ell(b, W * .5, H * .42, W * .55, H * .48, [[0, 'rgba(110,160,255,.17)'], [.7, 'rgba(45,107,255,0)']]);
+    var fy = H * .56, fh = H * .44;
+    var fg = b.createLinearGradient(0, fy, 0, H);
+    fg.addColorStop(0, 'rgba(45,107,255,0)'); fg.addColorStop(.4, 'rgba(45,107,255,.05)'); fg.addColorStop(1, T('rgba(5,6,12,.92)', 'rgba(206,220,248,.9)'));
+    b.fillStyle = fg; b.fillRect(0, fy, W, fh);
+    ell(b, W * .5, fy, W * .62, fh * .7, [[0, 'rgba(90,140,255,.14)'], [.7, 'rgba(45,107,255,0)']]);
+    var v = vgC.getContext('2d'); v.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ell(v, W * .5, H * .46, W * 1.25, H * .95, [[0, 'rgba(0,0,0,0)'], [.58, 'rgba(0,0,0,0)'], [1, T('rgba(0,0,0,.7)', 'rgba(120,150,215,.32)')]]);
+  }
+  function size(){
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.max(1, Math.round(W * dpr));
+    canvas.height = Math.max(1, Math.round(H * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildStatic();
+  }
+
+  var ribbons = [
+    {p:[[-.1,.20],[.12,.02],[.30,.24],[.52,-.04]], q:[[-.1,.38],[.14,.16],[.32,.36],[.52,-.04]], ph:0, a:.6},
+    {p:[[1.1,.16],[.92,.02],[.84,.20],[.74,-.04]], q:[[1.1,.30],[.94,.14],[.86,.32],[.74,-.04]], ph:2, a:.5},
+    {p:[[1.1,.62],[.90,.80],[.76,.94],[.62,1.06]], q:[[1.1,.84],[.92,.94],[.78,1.06],[.62,1.06]], ph:4, a:.5},
+    {p:[[-.1,.78],[.10,.90],[.24,.90],[.36,1.06]], q:[[-.1,.96],[.12,1.02],[.26,1.04],[.36,1.06]], ph:1, a:.35}
+  ];
+  function drawRibbons(t){
+    for (var r = 0; r < ribbons.length; r++){
+      var R = ribbons[r];
+      var ys = Math.min(H, W * .75), bottom = R.p[3][1] > .5;
+      var m = function(pt){
+        var w = Math.sin(t * .25 + R.ph + pt[0] * 2) * .02 * ys;
+        return [pt[0] * W, (bottom ? H + (pt[1] - 1) * ys : pt[1] * ys) + w];
+      };
+      var p = R.p.map(m), q = R.q.map(m);
+      ctx.beginPath();
+      ctx.moveTo(p[0][0], p[0][1]);
+      ctx.bezierCurveTo(p[1][0], p[1][1], p[2][0], p[2][1], p[3][0], p[3][1]);
+      ctx.lineTo(q[3][0], q[3][1]);
+      ctx.bezierCurveTo(q[2][0], q[2][1], q[1][0], q[1][1], q[0][0], q[0][1]);
+      ctx.closePath();
+      var g = ctx.createLinearGradient((p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2, (q[1][0] + q[2][0]) / 2, (q[1][1] + q[2][1]) / 2);
+      g.addColorStop(0, 'rgba(120,170,255,' + (R.a * .6).toFixed(3) + ')');
+      g.addColorStop(.4, 'rgba(40,90,220,' + (R.a * .2).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(10,20,50,0)');
+      ctx.fillStyle = g; ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(p[0][0], p[0][1]);
+      ctx.bezierCurveTo(p[1][0], p[1][1], p[2][0], p[2][1], p[3][0], p[3][1]);
+      ctx.lineWidth = 9; ctx.strokeStyle = 'rgba(45,107,255,' + (R.a * .14).toFixed(3) + ')'; ctx.stroke();
+      ctx.lineWidth = 1.3; ctx.strokeStyle = T('rgba(175,208,255,', 'rgba(45,107,255,') + (R.a * .8).toFixed(3) + ')'; ctx.stroke();
+    }
+  }
+
+  /* the same camera the cards use, so the rings sit exactly under the front card */
+  var TR = TILT * Math.PI / 180, CA = Math.cos(TR), SA = Math.sin(TR);
+  function proj(x, z){
+    var y = geo.F;
+    var y2 = y * CA - z * SA, z2 = y * SA + z * CA + geo.Sz;
+    var f = geo.P / (geo.P - z2);
+    return [W * .5 + x * f, H * .4 + y2 * f];
+  }
+  var rings = [{k:.45, a:.5, s:.8, T:15, dir:1}, {k:.62, a:.7, s:1, T:22, dir:-1}, {k:.82, a:.28, s:.5, T:30, dir:1}];
+  function drawFloor(t){
+    var R = geo.R, c0 = proj(0, -R);
+    var rp = .62 * R, l = proj(-rp, -R), rr = proj(rp, -R), fr = proj(0, -R + rp), bk = proj(0, -R - rp);
+    var rx = Math.abs(rr[0] - l[0]) / 2, ry = Math.abs(fr[1] - bk[1]) / 2;
+    if (rx > 1 && ry > 1) ell(ctx, c0[0], c0[1], rx, ry, [[0, 'rgba(70,130,255,.28)'], [.4, 'rgba(45,107,255,.09)'], [.68, 'rgba(45,107,255,0)']]);
+    for (var i = 0; i < rings.length; i++){
+      var g = rings[i], r = g.k * R, n = 96, pt;
+      ctx.beginPath();
+      for (var s = 0; s <= n; s++){
+        var th = s / n * Math.PI * 2;
+        pt = proj(r * Math.cos(th), -R + r * Math.sin(th));
+        if (s === 0) ctx.moveTo(pt[0], pt[1]); else ctx.lineTo(pt[0], pt[1]);
+      }
+      ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(45,107,255,' + (g.a * .2).toFixed(3) + ')'; ctx.stroke();
+      ctx.lineWidth = 1.4; ctx.strokeStyle = T('rgba(140,185,255,', 'rgba(45,107,255,') + g.a.toFixed(3) + ')'; ctx.stroke();
+      var th0 = g.dir * t * Math.PI * 2 / g.T;
+      ctx.lineWidth = 2.4;
+      for (var j = 0; j < 24; j++){
+        var ta = th0 - g.dir * j * .05, tb = ta - g.dir * .055;
+        var pa = proj(r * Math.cos(ta), -R + r * Math.sin(ta)), pb = proj(r * Math.cos(tb), -R + r * Math.sin(tb));
+        ctx.strokeStyle = T('rgba(215,230,255,', 'rgba(30,80,200,') + (.95 * g.s * (1 - j / 24)).toFixed(3) + ')';
+        ctx.beginPath(); ctx.moveTo(pa[0], pa[1]); ctx.lineTo(pb[0], pb[1]); ctx.stroke();
+      }
+    }
+  }
+  /* small drifting particles: they follow the carousel's turn, and scatter from a finger or cursor */
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var parts = [], spinV = 0, prevRot = rot, mx = -9999, my = -9999, lastT = 0;
+  var PCOL = ['255,255,255', '255,255,255', '255,255,255', '169,199,255', '169,199,255', '94,155,255'];
+  function initParts(){
+    var n = clamp(Math.round(W * H / 11000), 48, 110);
+    parts.length = 0;
+    for (var i = 0; i < n; i++){
+      var z = .25 + Math.random() * .75;
+      parts.push({
+        x: Math.random() * W, y: Math.random() * H, z: z,
+        r: .5 + z * 1.7,
+        vx: (Math.random() - .5) * 7, vy: -(3 + Math.random() * 9) * z,
+        px: 0, py: 0, ph: Math.random() * 6.28,
+        c: PCOL[Math.floor(Math.random() * PCOL.length)]
+      });
+    }
+  }
+  function updateParts(dt){
+    var k = calm ? 0 : 1, rad = 130;
+    for (var i = 0; i < parts.length; i++){
+      var p = parts[i];
+      var dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
+      if (d2 < rad * rad && d2 > 1){
+        var d = Math.sqrt(d2), f = (1 - d / rad) * 260 * p.z;
+        p.px += dx / d * f * dt; p.py += dy / d * f * dt;
+      }
+      p.px *= Math.exp(-dt * 1.6); p.py *= Math.exp(-dt * 1.6);
+      if (k){ /* random wandering */
+        p.vx = clamp(p.vx + (Math.random() - .5) * 46 * dt, -17, 17);
+        p.vy = clamp(p.vy + (Math.random() - .5) * 46 * dt, -17, 17);
+      }
+      p.x += ((p.vx - spinV * p.z * 3.2) * k + p.px) * dt;
+      p.y += (p.vy * k + p.py) * dt;
+      if (p.x < -8) p.x = W + 8; else if (p.x > W + 8) p.x = -8;
+      if (p.y < -8) p.y = H + 8; else if (p.y > H + 8) p.y = -8;
+    }
+  }
+  function drawLinks(t){
+    var L = clamp(W * .11, 90, 150), L2 = L * L, n = parts.length;
+    ctx.lineWidth = .8;
+    for (var i = 0; i < n; i++){
+      var a = parts[i], made = 0;
+      for (var j = i + 1; j < n && made < 3; j++){
+        var b = parts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+        if (d2 > L2) continue;
+        made++;
+        var f = 1 - Math.sqrt(d2) / L;
+        var al = f * f * .5 * Math.min(a.z, b.z) * (.7 + .3 * Math.sin(t * 2 + i * 1.7 + j));
+        ctx.strokeStyle = T('rgba(140,185,255,', 'rgba(45,107,255,') + al.toFixed(3) + ')';
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+  }
+  function drawParts(t){
+    drawLinks(t);
+    for (var i = 0; i < parts.length; i++){
+      var p = parts[i];
+      var a = (.22 + .6 * p.z) * (.62 + .38 * Math.sin(t * 1.3 + p.ph));
+      if (calm) a = .22 + .5 * p.z;
+      if (p.r > 1.5){
+        ctx.fillStyle = 'rgba(' + pc(p) + ',' + (a * .16).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3.2, 0, 6.2832); ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(' + pc(p) + ',' + a.toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+    }
+  }
+  function pointerAt(e){
+    if (dragging){ mx = my = -9999; return; }
+    var r = canvas.getBoundingClientRect();
+    mx = e.clientX - r.left; my = e.clientY - r.top;
+  }
+  window.addEventListener('pointermove', pointerAt);
+  window.addEventListener('pointerdown', pointerAt);
+  window.addEventListener('pointerup', function(e){ if (e.pointerType !== 'mouse'){ mx = my = -9999; } });
+  window.addEventListener('pointercancel', function(){ mx = my = -9999; });
+  document.addEventListener('pointerleave', function(){ mx = my = -9999; });
+
+  function drawBg(t){
+    ctx.drawImage(bgC, 0, 0, W, H);
+    drawRibbons(t);
+    drawFloor(t);
+    var pdt = lastT ? clamp(t - lastT, 0, .1) : 0; lastT = t;
+    updateParts(pdt);
+    drawParts(t);
+    ctx.drawImage(vgC, 0, 0, W, H);
+  }
+
+  size();
+  initParts();
+  window.addEventListener('resize', function(){ size(); measure(); initParts(); render(); drawBg(performance.now() / 1000); });
+
+  var last = performance.now(), lastDraw = 0;
+  function frame(now){
+    var dt = Math.min(.12, (now - last) / 1000); last = now;
+    if (!document.getElementById('atlas').hidden){ requestAnimationFrame(frame); return; }
+    if (!dragging){
+      var auto = !paused && now >= holdUntil && Math.abs(kick) < .5 && Math.abs(extra) < 1;
+      rot += (auto ? AUTO : 0) * dt + extra * dt;
+      extra *= Math.exp(-dt * 2.5);
+      var step = kick * (1 - Math.exp(-dt * 5));
+      rot += step; kick -= step;
+      /* during the automatic turn, rest a while each time a glass reaches the centre */
+      var cd = active < 0 ? 0 : norm(active * STEP + rot);
+      if (auto && prevD < 0 && cd >= 0){ rot -= cd; cd = 0; holdUntil = now + DWELL; }
+      prevD = cd;
+    } else { prevD = active < 0 ? 0 : norm(active * STEP + rot);     }
+    var target = dragging ? 0 : clamp((rot - prevRot) / Math.max(dt, .004), -320, 320); /* finger drag does not move particles */
+    spinV += (target - spinV) * .15;
+    prevRot = rot;
+    render();
+    if (now - lastDraw > 33){ drawBg(now / 1000); lastDraw = now; }
+    requestAnimationFrame(frame);
+  }
+  /* search: Enter turns the glass to the first slide that matches; Explore jumps to the search bar */
+  var qEl = document.getElementById('q'), searchBox = document.getElementById('search');
+  qEl.addEventListener('input', function(){ searchBox.classList.remove('nomatch'); });
+  qEl.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter') return;
+    var q = qEl.value.trim().toLowerCase();
+    if (!q) return;
+    if (chipMatches(q)){ goExplore(); qEl.blur(); return; }
+    for (var m = 0; m < S; m++){
+      var sd = slides[m];
+      if ((sd.pill + ' ' + sd.t + ' ' + sd.s + ' ' + sd.d).toLowerCase().indexOf(q) !== -1){ goSlide(m); qEl.blur(); return; }
+    }
+    searchBox.classList.add('nomatch');
+  });
+  var exploreBtn = document.getElementById('explore');
+  exploreBtn.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  exploreBtn.addEventListener('click', function(){ goExplore(); });
+  function goExplore(){ document.getElementById('exp').scrollIntoView({behavior: calm ? 'auto' : 'smooth', block: 'start'}); }
+
+  /* Explore fields: names only, tap to select, the search bar filters them */
+  var FIELDS = ['B2B Services', 'Beauty & Personal Care', 'Consumer Services', 'E-commerce', 'EdTech', 'FinTech', 'Food & Beverage', 'Home Services', 'Logistics', 'Payment Issues', 'Real Estate', 'SaaS', 'Transportation', 'Travel', 'Healthtech',
+    'Agriculture & Farming', 'Education', 'Healthcare', 'Employment & Jobs', 'Water & Sanitation', 'Environment & Pollution', 'Roads & Infrastructure', 'Energy & Power', 'Public Safety', 'Governance & Public Services', 'Housing & Urban Living', 'Digital Divide', 'Banking & Insurance', 'Women & Child Welfare', 'Other'];
+  var chipsEl = document.getElementById('chips'), stateEl = document.getElementById('expState'), selField = '';
+  var chipBtns = FIELDS.map(function(n){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = n; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function(){ selField = (selField === n) ? '' : n; syncChips(); });
+    chipsEl.appendChild(b);
+    return b;
+  });
+  function syncChips(){
+    var q = qEl.value.trim().toLowerCase(), shown = 0;
+    chipBtns.forEach(function(b, i){
+      var ok = !q || FIELDS[i].toLowerCase().indexOf(q) !== -1;
+      b.hidden = !ok; if (ok) shown++;
+      b.setAttribute('aria-pressed', FIELDS[i] === selField ? 'true' : 'false');
+    });
+    stateEl.textContent = selField ? 'Selected: ' + selField : (q ? (shown ? shown + (shown === 1 ? ' field matches' : ' fields match') : 'No field matches') : 'Tap a field to select it.');
+  }
+  function chipMatches(q){ return FIELDS.some(function(n){ return n.toLowerCase().indexOf(q) !== -1; }); }
+  qEl.addEventListener('input', syncChips);
+  syncChips();
+
+  /* theme toggle */
+  var themeBtn = document.getElementById('theme');
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>';
+  function themeUI(){ themeBtn.innerHTML = LIGHT ? MOON : SUN; themeBtn.setAttribute('aria-label', LIGHT ? 'Switch to dark mode' : 'Switch to light mode'); }
+  themeBtn.addEventListener('click', function(){
+    LIGHT = !LIGHT;
+    document.documentElement.setAttribute('data-theme', LIGHT ? 'light' : 'dark');
+    try { localStorage.setItem('stg-theme', LIGHT ? 'light' : 'dark'); } catch(err){}
+    themeUI(); buildStatic();
+  });
+  themeUI();
+
+  render();
+  drawBg(0);
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
