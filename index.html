@@ -1,4 +1,11 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}/* home top area: name, tagline, Explore and the live India map above the glass */
+.intro{position:absolute;z-index:400;left:max(16px,env(safe-area-inset-left,0px));top:calc(74px + env(safe-area-inset-top,0px));width:min(42%,420px)}
+.who{font:700 clamp(22px,4.2vw,40px)/1.05 var(--font);color:var(--white);letter-spacing:-.01em}
+.tag{margin:6px 0 0;font:500 clamp(12px,1.6vw,16px)/1.4 var(--font);color:var(--light-silver)}
+.intro .explore{position:static;transform:none;top:auto;left:auto;width:100%;margin-top:14px}
+.homemap{position:absolute;z-index:400;right:max(10px,env(safe-area-inset-right,0px));top:calc(66px + env(safe-area-inset-top,0px));width:min(56%,620px);height:calc(60% - var(--ch)/2 - 76px - env(safe-area-inset-top,0px))}
+.homemap svg{width:100%;height:100%;display:block;touch-action:manipulation}
+</style></head><body>
 <title>Switch the Glitch</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,19 +42,17 @@ body{
   background:var(--black);color:var(--off-white);
   font-family:var(--font);-webkit-font-smoothing:antialiased;
 }
-.hero{position:relative;height:100vh;height:100svh;overflow:hidden}
+.hero{position:relative;height:100vh;height:100svh;overflow:hidden;--cw:clamp(280px,min(46vw,52svh),700px);--ch:calc(var(--cw)*.56)}
 #bg{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 /* ---------- stage ---------- */
 .stage{
   position:absolute;inset:0;z-index:1;
-  --cw:clamp(300px,min(52vw,62svh),760px);
-  --ch:calc(var(--cw)*.56);
   overflow:hidden;cursor:grab;touch-action:pan-y;
   -webkit-user-select:none;user-select:none;
 }
 .stage.drag{cursor:grabbing}
-.scene{position:absolute;left:50%;top:40%;width:0;height:0}
+.scene{position:absolute;left:50%;top:60%;width:0;height:0}
 .probe{position:absolute;left:0;top:0;width:var(--cw);height:0;visibility:hidden;pointer-events:none}
 
 /* ---------- glass cards ---------- */
@@ -255,12 +260,25 @@ body{
 @media(min-width:900px){.at-main{flex-direction:row;overflow:hidden}.at-panel{overflow:auto}}
 .at-map{position:relative;flex:1 1 55%;min-height:46vh}
 .at-map svg.big{width:100%;height:100%;display:block;touch-action:manipulation}
-.st{fill:rgba(45,107,255,.22);stroke:#7fb0ff;stroke-width:var(--sw,1);stroke-linejoin:round;cursor:pointer;transition:fill .2s}
+.st{fill:rgba(45,107,255,.22);stroke:#7fb0ff;stroke-width:var(--sw,1);stroke-linejoin:round;cursor:pointer}
+svg.big.moving{pointer-events:none}
+svg.big.moving .st,svg.big.moving .loc{shape-rendering:optimizeSpeed}
+.hatch{fill:url(#pokH);stroke:none;pointer-events:none}
+.pl{stroke:#fff;stroke-opacity:.6}
+:root[data-theme="light"] .pl{stroke:#0A1230;stroke-opacity:.45}
+.loc{fill:none;stroke:#ff6b6b;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.at-leg{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-radius:10px;font:600 11px/1.2 var(--font);color:var(--off-white);background:rgba(10,14,26,.7);border:1px solid rgba(120,170,255,.35);pointer-events:none}
+:root[data-theme="light"] .at-leg{background:rgba(255,255,255,.8)}
+.at-leg span{display:flex;align-items:center;gap:8px}
+.lg{display:inline-block;width:22px;height:0;flex:none}
+.lg.l{border-top:2px dashed #ff6b6b}
+.lg.h{height:10px;border:1px solid #7fb0ff;background:repeating-linear-gradient(45deg,rgba(255,255,255,.65) 0 2px,transparent 2px 5px)}
+:root[data-theme="light"] .lg.h{background:repeating-linear-gradient(45deg,rgba(10,18,48,.55) 0 2px,transparent 2px 5px)}
 .st:hover{fill:rgba(94,155,255,.65)}
 .st.on{fill:rgba(94,155,255,.75);stroke:#fff}
 .st.cmp{fill:rgba(255,160,60,.55)}
 .utm{fill:#ffb347;stroke:#fff;stroke-width:var(--sw,1);cursor:pointer}
-.at-tip{position:absolute;pointer-events:none;padding:5px 10px;border-radius:10px;font:600 12px/1 var(--font);background:rgba(5,10,30,.9);border:1px solid var(--blue-bright);color:#fff;opacity:0;transition:opacity .15s;z-index:2}
+.at-tip{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;padding:5px 10px;border-radius:10px;font:600 12px/1 var(--font);background:rgba(5,10,30,.9);border:1px solid var(--blue-bright);color:#fff;opacity:0;transition:opacity .15s;z-index:2}
 .at-zoom{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
 .at-zoom button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(120,170,255,.6);background:rgba(10,14,26,.7);color:#fff;font-size:18px;cursor:pointer}
 .at-panel{flex:1 1 45%;padding:16px;border-left:1px solid rgba(120,170,255,.25);animation:atIn .35s ease}
@@ -280,7 +298,7 @@ body{
 .pc a{color:var(--blue-soft);margin-right:10px}.pc small{display:block;margin-top:8px;color:var(--silver);font-size:11px}
 .cmpg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-@media (max-aspect-ratio:9/10){.stage{--cw:clamp(280px,66vw,900px)}}
+@media (max-aspect-ratio:9/10){.hero{--cw:clamp(280px,66vw,900px)}}
 @media (max-width:640px){
   .c-desc{display:none}
   .c-left{width:62%}
@@ -319,7 +337,7 @@ body{
 </div>
 
 <section class="stage" id="stage" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Switch the Glitch. Drag or use the arrow keys to turn.">
-  <button class="explore" id="explore" type="button"><span class="explore-top">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="explore-txt">Major problems across India: health, education, jobs, farming, environment and more.</span></button>
+  
   <div class="scene"><div id="orbit"></div></div>
   <div class="probe" id="probe"></div>
 </section>
@@ -331,7 +349,8 @@ body{
   <div class="dots" id="dots"></div>
   <button class="btn" id="next" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </footer>
-<button class="ibtn" id="atlasBtn" type="button" aria-label="Explore India state by state"><svg class="mini" viewBox="0 0 10 10"><path d="M5 .5L8 4 6.5 9.5 3.5 9.5 2 4z" fill="rgba(45,107,255,.35)" stroke="#9fc3ff" stroke-width=".3"/></svg><span><b>Explore India</b><small>Discover the challenges of every state.</small></span></button>
+<div class="intro"><div class="who" id="who">Your Name</div><p class="tag">You are the next problem solver.</p><button class="explore" id="explore" type="button"><span class="explore-top">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="explore-txt">Major problems across India: health, education, jobs, farming, environment and more.</span></button></div>
+<div class="homemap" id="homeMap" role="group" aria-label="Map of India"><div class="at-tip" id="homeTip"></div></div>
 </div>
 
 <section class="exp" id="exp" aria-labelledby="expH">
@@ -352,106 +371,6 @@ body{
     <div class="at-zoom"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">−</button><button id="zr" aria-label="Reset">⟲</button></div></div>
     <div class="at-panel" id="atPanel"></div></div>
 </div>
-<script>window.Highcharts={maps:{}};</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/custom/in-all-disputed.js"></script>
-<script>
-(function(){
-  var $ = function(i){ return document.getElementById(i); };
-  var atlas = $('atlas'), mapEl = $('atMap'), panel = $('atPanel'), tip = $('atTip'), btn = $('atlasBtn');
-  var S = {cgwb:['CGWB','https://cgwb.gov.in'], jjm:['Jal Jeevan Mission','https://jaljeevanmission.gov.in'], imd:['IMD','https://mausam.imd.gov.in'], sac:['ISRO SAC Desertification Atlas','https://www.sac.gov.in'], plfs:['MoSPI PLFS','https://mospi.gov.in'], cpcb:['CPCB','https://cpcb.nic.in'], mohua:['MoHUA','https://mohua.gov.in'], mohfw:['MoHFW','https://main.mohfw.gov.in'], niti:['NITI Aayog','https://www.niti.gov.in'], ncrb:['NCRB (ADSI)','https://ncrb.gov.in'], agri:['Ministry of Agriculture','https://agricoop.gov.in'], census:['Census of India','https://censusindia.gov.in'], morth:['MoRTH','https://morth.nic.in'], udise:['UDISE+','https://udiseplus.gov.in'], ndma:['NDMA','https://ndma.gov.in'], gsi:['Geological Survey of India','https://www.gsi.gov.in'], cwc:['Central Water Commission','https://cwc.gov.in'], ksdma:['Kerala SDMA','https://sdma.kerala.gov.in']};
-  var IC = {Environment:'🌿', Education:'🎓', Healthcare:'🩺', Employment:'💼', Agriculture:'🌾', Infrastructure:'🏗️', 'Social Issues':'🤝'};
-  var CATS = ['All','Environment','Education','Healthcare','Employment','Agriculture','Infrastructure','Social Issues'];
-  var INFO = 'Andaman and Nicobar Islands|Port Blair|Island territory in the Bay of Bengal.;Andhra Pradesh|Amaravati|Coastal state in southern India.;Arunachal Pradesh|Itanagar|Eastern Himalayan border state.;Assam|Dispur|Brahmaputra valley state in the northeast.;Bihar|Patna|Densely populated Gangetic plain state.;Chandigarh|Chandigarh|Planned city shared by Punjab and Haryana.;Chhattisgarh|Raipur|Central state rich in forests and minerals.;Dadra and Nagar Haveli and Daman and Diu|Daman|Union Territory on the western coast.;Delhi|New Delhi|The national capital territory.;Goa|Panaji|Small coastal state known for tourism.;Gujarat|Gandhinagar|Western state with a long coastline.;Haryana|Chandigarh|Northern farming and industrial state.;Himachal Pradesh|Shimla|Himalayan hill state.;Jammu and Kashmir|Srinagar (summer), Jammu (winter)|Himalayan Union Territory in the north.;Jharkhand|Ranchi|Eastern mineral-rich plateau state.;Karnataka|Bengaluru|Southern state with a major technology hub.;Kerala|Thiruvananthapuram|Southwestern coastal state on the Western Ghats.;Ladakh|Leh|High-altitude Union Territory in the Himalaya.;Lakshadweep|Kavaratti|Coral island Union Territory in the Arabian Sea.;Madhya Pradesh|Bhopal|Large state in central India.;Maharashtra|Mumbai|Western state with India’s financial capital.;Manipur|Imphal|Northeastern hill state.;Meghalaya|Shillong|Rainy northeastern hill state.;Mizoram|Aizawl|Northeastern hill state bordering Myanmar.;Nagaland|Kohima|Northeastern hill state.;Odisha|Bhubaneswar|Eastern coastal state on the Bay of Bengal.;Puducherry|Puducherry|Union Territory with enclaves on the southeast coast.;Punjab|Chandigarh|Northwestern farming state.;Rajasthan|Jaipur|Largest state by area, home to the Thar desert.;Sikkim|Gangtok|Small Himalayan state.;Tamil Nadu|Chennai|Southern state with a long coastline.;Telangana|Hyderabad|Southern state on the Deccan plateau.;Tripura|Agartala|Small northeastern state bordering Bangladesh.;Uttar Pradesh|Lucknow|India’s most populous state.;Uttarakhand|Dehradun|Himalayan state in the north.;West Bengal|Kolkata|Eastern state from the Himalaya to the Bay of Bengal.';
-  var AL = {orissa:'odisha', uttaranchal:'uttarakhand', nctofdelhi:'delhi', dadraandnagarhaveli:'dadraandnagarhavelianddamananddiu', damananddiu:'dadraandnagarhavelianddamananddiu', andamanandnicobar:'andamanandnicobarislands'};
-  var D = {}; INFO.split(';').forEach(function(r){ r = r.split('|'); D[key(r[0])] = {n:r[0], cap:r[1], intro:r[2]}; });
-  function key(s){ s = s.toLowerCase().replace(/&/g,'and').replace(/[^a-z]/g,''); return AL[s] || s; }
-  var P = {
-    rajasthan:[['Water scarcity','Environment','Much of the state is arid with low, erratic rain and heavy reliance on groundwater.','Dry climate plus groundwater use above natural recharge in many areas.','Villages depend on tankers; drinking water and farming both suffer.','Rainwater harvesting, efficient irrigation, tighter groundwater regulation.',['cgwb','jjm']],['Drought and desertification','Environment','Western districts face recurring drought and spreading degraded, sandy land.','Low rainfall, overgrazing, wind erosion and land degradation.','Crop failure, fodder shortage and lost livelihoods.','Shelterbelts, watershed work, drought-tolerant crops, pasture management.',['imd','sac']],['Unemployment','Employment','Many young people lack enough local non-farm jobs.','Limited industry outside a few hubs and heavy dependence on rain-fed farming.','Seasonal migration and uncertain incomes.','Skilling, small-business and tourism jobs, rural non-farm enterprise.',['plfs']]],
-    delhi:[['Air pollution','Environment','Winter smog regularly pushes air quality into unhealthy ranges.','Vehicle and construction emissions, crop-residue burning in the region and winter weather that traps pollutants.','Breathing problems, especially for children and the elderly.','Cleaner transport, dust control, regional coordination on stubble burning.',['cpcb']],['Traffic congestion','Infrastructure','Roads are crowded, with long peak-hour delays.','Rapid growth in private vehicles across the wider city region.','Lost time, fuel cost and added pollution.','Metro and bus expansion, last-mile links, better parking and traffic management.',['morth','mohua']],['Waste management','Infrastructure','Large volumes of waste strain landfills and collection systems.','A very large population and limited processing capacity.','Odour, health risks and pressure on neighbourhoods near landfills.','Source segregation, composting and recycling, scientific landfill remediation.',['mohua']]],
-    maharashtra:[['Farmer distress','Agriculture','Many farmers face debt and unstable incomes, especially in rain-fed regions.','Erratic rain, input costs, price swings and limited irrigation.','Financial stress on farm families and rural distress.','Crop insurance, irrigation, fair-price access, income support.',['ncrb','agri']],['Urban overcrowding','Infrastructure','Large cities have crowded housing and transport.','Heavy migration towards a few urban centres.','Slums, long commutes and strained services.','Affordable housing, mass transit, planned growth of smaller cities.',['census','mohua']],['Water scarcity','Environment','Some regions, notably Marathwada, face repeated water shortages.','Uneven rainfall and dependence on groundwater and a few reservoirs.','Tanker dependence and hardship in dry years.','Watershed management, efficient irrigation, water-saving crops.',['cwc','cgwb']]],
-    bihar:[['Migration for work','Employment','Many workers leave the state to find jobs elsewhere.','Limited local industry and employment opportunities.','Families split up and local economies lose working-age people.','Industrial and service investment, skilling, local job creation.',['census','plfs']],['Unemployment','Employment','Finding stable, well-paid work is a major challenge.','A young population with limited formal job creation.','Low household incomes and dependence on remittances.','Vocational training, small-business support, more private investment.',['plfs','niti']],['Education challenges','Education','Gaps in school quality, access and retention persist.','Large student numbers, teacher gaps and infrastructure limits.','Weaker learning outcomes and fewer opportunities.','Teacher recruitment and training, school infrastructure, learning support.',['udise','niti']]],
-    uttarpradesh:[['Air pollution','Environment','Many cities in the Gangetic plain see poor air quality, especially in winter.','Vehicle and industrial emissions, burning, dust and weather that traps pollutants.','Respiratory illness and reduced quality of life.','Cleaner fuels and transport, emission controls, regional action plans.',['cpcb']],['Healthcare access','Healthcare','Access to quality care is uneven, particularly in rural areas.','A very large population and gaps in facilities and health workers.','Long travel to hospitals and reliance on costly private care.','Stronger primary care, more doctors and staff, telemedicine.',['mohfw','niti']],['Unemployment','Employment','Many young people struggle to find stable jobs.','A very large workforce and limited formal job creation.','Migration for work and low incomes.','Skilling, manufacturing and small-business growth.',['plfs']]],
-    kerala:[['Flooding','Environment','Heavy monsoon rain can cause severe floods.','Intense rainfall, dense settlement and altered river and land use.','Displacement, damaged homes and lost livelihoods.','Early warning, flood-zone planning, river and reservoir management.',['ndma','cwc','ksdma']],['Landslides','Environment','Hilly districts are prone to landslides in heavy rain.','Steep slopes, intense rain and slope-changing construction.','Loss of life and homes, and blocked roads.','Hazard mapping, restricting risky construction, early warning.',['gsi','ksdma']],['Waste management','Infrastructure','Handling growing waste is a challenge in a densely settled state.','High population density and limited land for disposal.','Pollution of water bodies and public health risk.','Decentralised composting, segregation and recycling.',['mohua']]]
-  };
-  var feats = [], bb, vb, cur = null, cmp = false, pair = [], cat = 'All', svg, ix = {};
-  var UTS = ['andamanandnicobarislands','chandigarh','dadraandnagarhavelianddamananddiu','delhi','jammuandkashmir','ladakh','lakshadweep','puducherry'];
-  function ringD(r){ return 'M' + r.map(function(p){ return p[0] + ',' + (-p[1]); }).join('L') + 'Z'; }
-  function geoD(g){ var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates; return polys.map(function(pl){ return pl.map(ringD).join(''); }).join(''); }
-  function box(g){ var a = 1e9, b = 1e9, c = -1e9, d = -1e9; (function w(x){ if (typeof x[0] === 'number'){ if (x[0] < a) a = x[0]; if (x[0] > c) c = x[0]; if (-x[1] < b) b = -x[1]; if (-x[1] > d) d = -x[1]; } else x.forEach(w); })(g.coordinates); return [a, b, c - a, d - b]; }
-  function load(){
-    var d = Object.keys(Highcharts.maps).map(function(k){ return Highcharts.maps[k]; })[0];
-    if (d && d.type === 'Topology' && window.topojson){ var o = d.objects; d = topojson.feature(d, o[Object.keys(o)[0]]); }
-    if (!d || !d.features){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load. Check your connection and reload.</p>'); return; }
-    feats = d.features.filter(function(f){ return f.geometry; });
-    feats.forEach(function(f){ f._d = geoD(f.geometry); f._b = box(f.geometry); f._k = key(f.properties.name || ''); });
-    var all = feats.map(function(f){ return f._b; });
-    bb = [Math.min.apply(0, all.map(function(b){ return b[0]; })), Math.min.apply(0, all.map(function(b){ return b[1]; }))];
-    bb[2] = Math.max.apply(0, all.map(function(b){ return b[0] + b[2]; })) - bb[0]; bb[3] = Math.max.apply(0, all.map(function(b){ return b[1] + b[3]; })) - bb[1];
-    var pad = bb[2] * .04; bb = [bb[0] - pad, bb[1] - pad, bb[2] + 2 * pad, bb[3] + 2 * pad]; vb = bb.slice();
-    feats.forEach(function(f, i){ var k = key(info(f).n); if (!(k in ix)) ix[k] = i; });
-    Object.keys(D).forEach(function(k){ if (!(k in ix)){ feats.push({properties:{name:D[k].n}, _d:'', _b:null, _k:k}); ix[k] = feats.length - 1; } });
-    var paths = feats.map(function(f, i){ return f._b ? '<path class="st" data-i="' + i + '" d="' + f._d + '"><title>' + info(f).n + '</title></path>' : ''; }).join('');
-    var mk = ['chandigarh','delhi','dadraandnagarhavelianddamananddiu','lakshadweep','puducherry'].map(function(k){ var f = feats[ix[k]]; if (!f || !f._b) return ''; return '<circle class="utm" data-i="' + ix[k] + '" cx="' + (f._b[0] + f._b[2] / 2) + '" cy="' + (f._b[1] + f._b[3] / 2) + '" r="' + bb[2] / 90 + '"><title>' + f.properties.name + '</title></circle>'; }).join('');
-    mapEl.insertAdjacentHTML('afterbegin', '<svg class="big" id="atSvg" viewBox="' + vb.join(' ') + '" role="group" aria-label="Map of India">' + paths + mk + '</svg>');
-    svg = $('atSvg'); svg.style.setProperty('--sw', bb[2] / 450);
-    btn.querySelector('.mini').outerHTML = '<svg class="mini" viewBox="' + bb.join(' ') + '">' + feats.map(function(f){ return '<path d="' + f._d + '" fill="rgba(45,107,255,.35)" stroke="#9fc3ff" stroke-width="' + bb[2] / 120 + '"/>'; }).join('') + '</svg>';
-    $('atList').innerHTML = feats.map(function(f){ return '<option value="' + info(f).n + '">'; }).join('');
-    svg.addEventListener('click', function(e){ var p = e.target.closest('.st,.utm'); if (p) pick(+p.dataset.i); });
-    svg.addEventListener('mousemove', function(e){ var p = e.target.closest('.st,.utm'), r = mapEl.getBoundingClientRect(); if (!p){ tip.style.opacity = 0; return; } tip.textContent = info(feats[+p.dataset.i]).n; tip.style.opacity = 1; tip.style.left = e.clientX - r.left + 12 + 'px'; tip.style.top = e.clientY - r.top + 12 + 'px'; });
-    svg.addEventListener('mouseleave', function(){ tip.style.opacity = 0; });
-  }
-  function tween(to){ var from = vb.slice(), t0 = performance.now(); (function s(t){ var k = Math.min(1, (t - t0) / 450); k = k * k * (3 - 2 * k); vb = from.map(function(v, i){ return v + (to[i] - v) * k; }); svg.setAttribute('viewBox', vb.join(' ')); if (k < 1) requestAnimationFrame(s); })(t0); }
-  function zoom(f){ var cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2, w = vb[2] / f, h = vb[3] / f; tween([cx - w / 2, cy - h / 2, w, h]); }
-  function zoomTo(b){ if (!b){ tween(bb.slice()); return; } var m = Math.max(b[2], b[3] * (bb[2] / bb[3])) * 1.5, w = Math.max(m, bb[2] / 6), h = w * bb[3] / bb[2]; tween([b[0] + b[2] / 2 - w / 2, b[1] + b[3] / 2 - h / 2, w, h]); }
-  function info(f){ var k = f._k, x = D[k]; if (!x){ for (var q in D){ if (q.indexOf(k) === 0 || k.indexOf(q) === 0) x = D[q]; } } if (!x){ var nm = (f.properties.name || '').toLowerCase(); if (/aksai|china/.test(nm)) x = D.ladakh; else if (/gilgit|baltistan|azad|pakistan|kashmir|pok/.test(nm)) x = D.jammuandkashmir; }
-    return x || {n:f.properties.name, cap:'', intro:''}; }
-  function probs(f){ var k = info(f).n ? key(info(f).n) : f._k; return P[k] || []; }
-  function sync(){ var kk = function(i){ return i == null ? null : key(info(feats[i]).n); }, ck = kk(cur), pk = pair.map(kk); [].forEach.call(svg.querySelectorAll('.st'), function(p){ var k2 = kk(+p.dataset.i); p.classList.toggle('on', !cmp && ck !== null && ck === k2); p.classList.toggle('cmp', cmp && pk.indexOf(k2) > -1); }); }
-  function pick(i){
-    if (cmp){ var j = pair.indexOf(i); if (j > -1) pair.splice(j, 1); else { pair.push(i); if (pair.length > 2) pair.shift(); } sync(); showCmp(); return; }
-    cur = i; cat = 'All'; sync(); zoomTo(feats[i]._b); show(); panel.scrollTop = 0;
-  }
-  function card(p){ return '<article class="pc"><h3><i>' + (IC[p[1]] || '•') + '</i><span><em>' + p[1] + '</em><br>' + p[0] + '</span></h3><p><strong>What:</strong> ' + p[2] + '</p><p><strong>Why it happens:</strong> ' + p[3] + '</p><p><strong>Effect on people:</strong> ' + p[4] + '</p><p><strong>Possible solutions:</strong> ' + p[5] + '</p><small>Sources: ' + p[6].map(function(s){ return '<a href="' + S[s][1] + '" target="_blank" rel="noopener">' + S[s][0] + '</a>'; }).join('') + '<br>Last updated: 12 Nov 2026. A qualitative summary, so check the sources above for current figures.</small></article>'; }
-  function show(){
-    var f = feats[cur], x = info(f), ps = probs(f).filter(function(p){ return cat === 'All' || p[1] === cat; });
-    var out = '<div class="at-hd">' + (f._b ? '<svg viewBox="' + f._b.join(' ') + '"><path d="' + f._d + '" fill="rgba(94,155,255,.45)" stroke="#fff" stroke-width="' + f._b[2] / 60 + '"/></svg>' : '') + '<div><h2>' + x.n + '</h2><div class="at-sub">Capital: ' + x.cap + '</div></div></div><p class="at-sub">' + x.intro + '</p>';
-    out += '<div class="at-chips" role="group" aria-label="Filter by category">' + CATS.map(function(c){ return '<button type="button" aria-pressed="' + (c === cat) + '">' + c + '</button>'; }).join('') + '</div>';
-    out += probs(f).length ? (ps.length ? ps.map(card).join('') : '<p class="at-sub">No problems listed in this category for ' + x.n + '.</p>') : '<p class="at-sub">Researched problem cards for ' + x.n + ' are not added yet.</p>';
-    panel.innerHTML = out + '<button class="at-b" id="another" type="button">Explore another state</button>';
-    $('another').onclick = back;
-    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ cat = b.textContent; show(); }; });
-  }
-  function showCmp(){
-    if (pair.length < 2){ panel.innerHTML = '<h2>Compare states</h2><p class="at-sub">Tap two states on the map. Selected: ' + (pair.length ? info(feats[pair[0]]).n : 'none') + '.</p>'; return; }
-    panel.innerHTML = '<h2>Compare states</h2><div class="cmpg">' + pair.map(function(i){ var f = feats[i], ps = probs(f); return '<div><h3 style="margin:8px 0">' + info(f).n + '</h3>' + (ps.length ? ps.map(function(p){ return '<div class="pc"><em>' + p[1] + '</em><h3 style="font-size:14px">' + p[0] + '</h3><p>' + p[2] + '</p></div>'; }).join('') : '<p class="at-sub">Not added yet.</p>') + '</div>'; }).join('') + '</div>';
-  }
-  function hint(){
-    var h = function(a){ return a.map(function(k){ return '<button type="button" data-k="' + k + '">' + D[k].n + '</button>'; }).join(''); };
-    var ks = Object.keys(D), ut = ks.filter(function(k){ return UTS.indexOf(k) > -1; }), st = ks.filter(function(k){ return UTS.indexOf(k) < 0; });
-    panel.innerHTML = '<h2>Explore India</h2><p class="at-sub">Tap any state or Union Territory on the map, or pick one below. Orange dots mark small Union Territories. You can also search by name or turn on Compare states.</p><h3>States (' + st.length + ')</h3><div class="at-chips">' + h(st) + '</div><h3>Union Territories (' + ut.length + ')</h3><div class="at-chips">' + h(ut) + '</div>';
-    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ var i = ix[b.dataset.k]; if (i != null) pick(i); }; });
-  }
-  function back(){ cur = null; pair = []; cmp = false; $('atCmp').setAttribute('aria-pressed', 'false'); sync(); tween(bb.slice()); hint(); mapEl.scrollIntoView({behavior:'smooth', block:'start'}); }
-  function open(){
-    atlas.hidden = false;
-    if (!svg){
-      if (Object.keys(Highcharts.maps).length) load();
-      else { var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/in-all.js'; sc.onload = load; sc.onerror = load; document.head.appendChild(sc); }
-    }
-    hint();
-  }
-  btn.addEventListener('click', open);
-  $('atX').onclick = function(){ atlas.hidden = true; };
-  $('atBack').onclick = back;
-  $('atCmp').onclick = function(){ cmp = !cmp; pair = []; cur = null; this.setAttribute('aria-pressed', cmp); sync(); if (cmp) showCmp(); else hint(); tween(bb.slice()); };
-  $('zi').onclick = function(){ zoom(1.5); }; $('zo').onclick = function(){ zoom(1 / 1.5); }; $('zr').onclick = function(){ tween(bb.slice()); };
-  $('atQ').addEventListener('change', function(){ var q = this.value.trim().toLowerCase(), i = -1; feats.forEach(function(f, n){ if (i < 0 && (f.properties.name + ' ' + info(f).n).toLowerCase().indexOf(q) > -1) i = n; }); if (i > -1){ pick(i); this.blur(); } });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !atlas.hidden) atlas.hidden = true; });
-  load = (function(l){ return function(){ try { l(); } catch (err){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load.</p>'); } }; })(load);
-})();
-</script>
-
 <script>
 (function(){
   var N = 12, STEP = 360 / N, S = 4, TILT = 9;
@@ -676,6 +595,7 @@ body{
   var LIGHT = false;
   try { LIGHT = localStorage.getItem('stg-theme') === 'light'; } catch(err){}
   document.documentElement.setAttribute('data-theme', LIGHT ? 'light' : 'dark');
+  var SY = .6;
   function T(d, l){ return LIGHT ? l : d; }
   function pc(p){ return LIGHT ? (p.c === '255,255,255' ? '45,107,255' : (p.c === '169,199,255' ? '70,120,230' : '30,80,200')) : p.c; }
   function ell(g, cx, cy, rx, ry, stops){
@@ -691,8 +611,8 @@ body{
     var lg = b.createLinearGradient(0, 0, 0, H);
     lg.addColorStop(0, T('#0A1022', '#F6F9FF')); lg.addColorStop(.55, T('#050505', '#DCE7FB')); lg.addColorStop(1, T('#050505', '#DCE7FB'));
     b.fillStyle = lg; b.fillRect(0, 0, W, H);
-    ell(b, W * .5, H * .42, W * .55, H * .48, [[0, 'rgba(110,160,255,.17)'], [.7, 'rgba(45,107,255,0)']]);
-    var fy = H * .56, fh = H * .44;
+    ell(b, W * .5, H * (SY + .02), W * .55, H * .48, [[0, 'rgba(110,160,255,.17)'], [.7, 'rgba(45,107,255,0)']]);
+    var fy = H * (SY + .16), fh = H - fy;
     var fg = b.createLinearGradient(0, fy, 0, H);
     fg.addColorStop(0, 'rgba(45,107,255,0)'); fg.addColorStop(.4, 'rgba(45,107,255,.05)'); fg.addColorStop(1, T('rgba(5,6,12,.92)', 'rgba(206,220,248,.9)'));
     b.fillStyle = fg; b.fillRect(0, fy, W, fh);
@@ -749,7 +669,7 @@ body{
     var y = geo.F;
     var y2 = y * CA - z * SA, z2 = y * SA + z * CA + geo.Sz;
     var f = geo.P / (geo.P - z2);
-    return [W * .5 + x * f, H * .4 + y2 * f];
+    return [W * .5 + x * f, H * SY + y2 * f];
   }
   var rings = [{k:.45, a:.5, s:.8, T:15, dir:1}, {k:.62, a:.7, s:1, T:22, dir:-1}, {k:.82, a:.28, s:.5, T:30, dir:1}];
   function drawFloor(t){
@@ -951,6 +871,182 @@ body{
   render();
   drawBg(0);
   requestAnimationFrame(frame);
+})();
+</script>
+
+
+<script>window.Highcharts={maps:{}};</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson-client/3.1.0/topojson-client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/custom/in-all-disputed.js"></script>
+<script>
+(function(){
+  var $ = function(i){ return document.getElementById(i); };
+  var atlas = $('atlas'), mapEl = $('atMap'), panel = $('atPanel'), tip = $('atTip');
+  var S = {cgwb:['CGWB','https://cgwb.gov.in'], jjm:['Jal Jeevan Mission','https://jaljeevanmission.gov.in'], imd:['IMD','https://mausam.imd.gov.in'], sac:['ISRO SAC Desertification Atlas','https://www.sac.gov.in'], plfs:['MoSPI PLFS','https://mospi.gov.in'], cpcb:['CPCB','https://cpcb.nic.in'], mohua:['MoHUA','https://mohua.gov.in'], mohfw:['MoHFW','https://main.mohfw.gov.in'], niti:['NITI Aayog','https://www.niti.gov.in'], ncrb:['NCRB (ADSI)','https://ncrb.gov.in'], agri:['Ministry of Agriculture','https://agricoop.gov.in'], census:['Census of India','https://censusindia.gov.in'], morth:['MoRTH','https://morth.nic.in'], udise:['UDISE+','https://udiseplus.gov.in'], ndma:['NDMA','https://ndma.gov.in'], gsi:['Geological Survey of India','https://www.gsi.gov.in'], cwc:['Central Water Commission','https://cwc.gov.in'], ksdma:['Kerala SDMA','https://sdma.kerala.gov.in']};
+  var IC = {Environment:'🌿', Education:'🎓', Healthcare:'🩺', Employment:'💼', Agriculture:'🌾', Infrastructure:'🏗️', 'Social Issues':'🤝'};
+  var CATS = ['All','Environment','Education','Healthcare','Employment','Agriculture','Infrastructure','Social Issues'];
+  var INFO = 'Andaman and Nicobar Islands|Port Blair|Island territory in the Bay of Bengal.;Andhra Pradesh|Amaravati|Coastal state in southern India.;Arunachal Pradesh|Itanagar|Eastern Himalayan border state.;Assam|Dispur|Brahmaputra valley state in the northeast.;Bihar|Patna|Densely populated Gangetic plain state.;Chandigarh|Chandigarh|Planned city shared by Punjab and Haryana.;Chhattisgarh|Raipur|Central state rich in forests and minerals.;Dadra and Nagar Haveli and Daman and Diu|Daman|Union Territory on the western coast.;Delhi|New Delhi|The national capital territory.;Goa|Panaji|Small coastal state known for tourism.;Gujarat|Gandhinagar|Western state with a long coastline.;Haryana|Chandigarh|Northern farming and industrial state.;Himachal Pradesh|Shimla|Himalayan hill state.;Jammu and Kashmir|Srinagar (summer), Jammu (winter)|Himalayan Union Territory in the north.;Jharkhand|Ranchi|Eastern mineral-rich plateau state.;Karnataka|Bengaluru|Southern state with a major technology hub.;Kerala|Thiruvananthapuram|Southwestern coastal state on the Western Ghats.;Ladakh|Leh|High-altitude Union Territory in the Himalaya.;Lakshadweep|Kavaratti|Coral island Union Territory in the Arabian Sea.;Madhya Pradesh|Bhopal|Large state in central India.;Maharashtra|Mumbai|Western state with India’s financial capital.;Manipur|Imphal|Northeastern hill state.;Meghalaya|Shillong|Rainy northeastern hill state.;Mizoram|Aizawl|Northeastern hill state bordering Myanmar.;Nagaland|Kohima|Northeastern hill state.;Odisha|Bhubaneswar|Eastern coastal state on the Bay of Bengal.;Puducherry|Puducherry|Union Territory with enclaves on the southeast coast.;Punjab|Chandigarh|Northwestern farming state.;Rajasthan|Jaipur|Largest state by area, home to the Thar desert.;Sikkim|Gangtok|Small Himalayan state.;Tamil Nadu|Chennai|Southern state with a long coastline.;Telangana|Hyderabad|Southern state on the Deccan plateau.;Tripura|Agartala|Small northeastern state bordering Bangladesh.;Uttar Pradesh|Lucknow|India’s most populous state.;Uttarakhand|Dehradun|Himalayan state in the north.;West Bengal|Kolkata|Eastern state from the Himalaya to the Bay of Bengal.';
+  var AL = {orissa:'odisha', uttaranchal:'uttarakhand', nctofdelhi:'delhi', dadraandnagarhaveli:'dadraandnagarhavelianddamananddiu', damananddiu:'dadraandnagarhavelianddamananddiu', andamanandnicobar:'andamanandnicobarislands'};
+  var D = {}; INFO.split(';').forEach(function(r){ r = r.split('|'); D[key(r[0])] = {n:r[0], cap:r[1], intro:r[2]}; });
+  function key(s){ s = s.toLowerCase().replace(/&/g,'and').replace(/[^a-z]/g,''); return AL[s] || s; }
+  var P = {
+    rajasthan:[['Water scarcity','Environment','Much of the state is arid with low, erratic rain and heavy reliance on groundwater.','Dry climate plus groundwater use above natural recharge in many areas.','Villages depend on tankers; drinking water and farming both suffer.','Rainwater harvesting, efficient irrigation, tighter groundwater regulation.',['cgwb','jjm']],['Drought and desertification','Environment','Western districts face recurring drought and spreading degraded, sandy land.','Low rainfall, overgrazing, wind erosion and land degradation.','Crop failure, fodder shortage and lost livelihoods.','Shelterbelts, watershed work, drought-tolerant crops, pasture management.',['imd','sac']],['Unemployment','Employment','Many young people lack enough local non-farm jobs.','Limited industry outside a few hubs and heavy dependence on rain-fed farming.','Seasonal migration and uncertain incomes.','Skilling, small-business and tourism jobs, rural non-farm enterprise.',['plfs']]],
+    delhi:[['Air pollution','Environment','Winter smog regularly pushes air quality into unhealthy ranges.','Vehicle and construction emissions, crop-residue burning in the region and winter weather that traps pollutants.','Breathing problems, especially for children and the elderly.','Cleaner transport, dust control, regional coordination on stubble burning.',['cpcb']],['Traffic congestion','Infrastructure','Roads are crowded, with long peak-hour delays.','Rapid growth in private vehicles across the wider city region.','Lost time, fuel cost and added pollution.','Metro and bus expansion, last-mile links, better parking and traffic management.',['morth','mohua']],['Waste management','Infrastructure','Large volumes of waste strain landfills and collection systems.','A very large population and limited processing capacity.','Odour, health risks and pressure on neighbourhoods near landfills.','Source segregation, composting and recycling, scientific landfill remediation.',['mohua']]],
+    maharashtra:[['Farmer distress','Agriculture','Many farmers face debt and unstable incomes, especially in rain-fed regions.','Erratic rain, input costs, price swings and limited irrigation.','Financial stress on farm families and rural distress.','Crop insurance, irrigation, fair-price access, income support.',['ncrb','agri']],['Urban overcrowding','Infrastructure','Large cities have crowded housing and transport.','Heavy migration towards a few urban centres.','Slums, long commutes and strained services.','Affordable housing, mass transit, planned growth of smaller cities.',['census','mohua']],['Water scarcity','Environment','Some regions, notably Marathwada, face repeated water shortages.','Uneven rainfall and dependence on groundwater and a few reservoirs.','Tanker dependence and hardship in dry years.','Watershed management, efficient irrigation, water-saving crops.',['cwc','cgwb']]],
+    bihar:[['Migration for work','Employment','Many workers leave the state to find jobs elsewhere.','Limited local industry and employment opportunities.','Families split up and local economies lose working-age people.','Industrial and service investment, skilling, local job creation.',['census','plfs']],['Unemployment','Employment','Finding stable, well-paid work is a major challenge.','A young population with limited formal job creation.','Low household incomes and dependence on remittances.','Vocational training, small-business support, more private investment.',['plfs','niti']],['Education challenges','Education','Gaps in school quality, access and retention persist.','Large student numbers, teacher gaps and infrastructure limits.','Weaker learning outcomes and fewer opportunities.','Teacher recruitment and training, school infrastructure, learning support.',['udise','niti']]],
+    uttarpradesh:[['Air pollution','Environment','Many cities in the Gangetic plain see poor air quality, especially in winter.','Vehicle and industrial emissions, burning, dust and weather that traps pollutants.','Respiratory illness and reduced quality of life.','Cleaner fuels and transport, emission controls, regional action plans.',['cpcb']],['Healthcare access','Healthcare','Access to quality care is uneven, particularly in rural areas.','A very large population and gaps in facilities and health workers.','Long travel to hospitals and reliance on costly private care.','Stronger primary care, more doctors and staff, telemedicine.',['mohfw','niti']],['Unemployment','Employment','Many young people struggle to find stable jobs.','A very large workforce and limited formal job creation.','Migration for work and low incomes.','Skilling, manufacturing and small-business growth.',['plfs']]],
+    kerala:[['Flooding','Environment','Heavy monsoon rain can cause severe floods.','Intense rainfall, dense settlement and altered river and land use.','Displacement, damaged homes and lost livelihoods.','Early warning, flood-zone planning, river and reservoir management.',['ndma','cwc','ksdma']],['Landslides','Environment','Hilly districts are prone to landslides in heavy rain.','Steep slopes, intense rain and slope-changing construction.','Loss of life and homes, and blocked roads.','Hazard mapping, restricting risky construction, early warning.',['gsi','ksdma']],['Waste management','Infrastructure','Handling growing waste is a challenge in a densely settled state.','High population density and limited land for disposal.','Pollution of water bodies and public health risk.','Decentralised composting, segregation and recycling.',['mohua']]]
+  };
+  var feats = [], bb, vb, cur = null, cmp = false, pair = [], cat = 'All', svg, ix = {};
+  var UTS = ['andamanandnicobarislands','chandigarh','dadraandnagarhavelianddamananddiu','delhi','jammuandkashmir','ladakh','lakshadweep','puducherry'];
+  var TOL = 0;
+  /* thin out points closer together than tol and round the rest, so the SVG has far fewer nodes to repaint */
+  function thin(r, tol){
+    if (!tol) return r.map(function(p){ return [p[0], -p[1]]; });
+    var dec = Math.max(0, Math.ceil(-Math.log(tol / 3) / Math.LN10)), o = [], lx = 0, ly = 0, n = r.length;
+    for (var i = 0; i < n; i++){
+      var x = r[i][0], y = -r[i][1];
+      if (!o.length || i === n - 1 || Math.abs(x - lx) + Math.abs(y - ly) >= tol){ o.push([+x.toFixed(dec), +y.toFixed(dec)]); lx = x; ly = y; }
+    }
+    return o.length < 4 ? thin(r, 0) : o;
+  }
+  function ringD(r, tol){ return 'M' + thin(r, tol).map(function(p){ return p[0] + ',' + p[1]; }).join('L') + 'Z'; }
+  function geoD(g, tol){ var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates; return polys.map(function(pl){ return pl.map(function(r){ return ringD(r, tol); }).join(''); }).join(''); }
+  function ringsOf(g){ var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates, out = []; polys.forEach(function(pl){ pl.forEach(function(r){ out.push(r); }); }); return out; }
+  /* Line of Control: the edges that Pakistan-administered Kashmir shares with Jammu and Kashmir or Ladakh */
+  function loc(){
+    var pk = feats.filter(function(f){ return f._pok; });
+    if (!pk.length) return '';
+    var q = bb[2] / 20000, kf = function(p){ return Math.round(p[0] / q) + ',' + Math.round(p[1] / q); }, set = {}, parts = [];
+    feats.forEach(function(f){ if (f._pok || f._ak) return; var k = key(info(f).n); if (k !== 'jammuandkashmir' && k !== 'ladakh') return; ringsOf(f.geometry).forEach(function(r){ r.forEach(function(p){ set[kf(p)] = 1; }); }); });
+    pk.forEach(function(f){ ringsOf(f.geometry).forEach(function(r){
+      var run = [];
+      for (var i = 0; i < r.length; i++){
+        if (set[kf(r[i])]) run.push(r[i]);
+        else { if (run.length > 1) parts.push(run); run = []; }
+      }
+      if (run.length > 1) parts.push(run);
+    }); });
+    return parts.map(function(run){ return 'M' + thin(run, TOL).map(function(p){ return p[0] + ',' + p[1]; }).join('L'); }).join('');
+  }
+  function box(g){ var a = 1e9, b = 1e9, c = -1e9, d = -1e9; (function w(x){ if (typeof x[0] === 'number'){ if (x[0] < a) a = x[0]; if (x[0] > c) c = x[0]; if (-x[1] < b) b = -x[1]; if (-x[1] > d) d = -x[1]; } else x.forEach(w); })(g.coordinates); return [a, b, c - a, d - b]; }
+  function load(){
+    var d = Object.keys(Highcharts.maps).map(function(k){ return Highcharts.maps[k]; })[0];
+    if (d && d.type === 'Topology' && window.topojson){ var o = d.objects; d = topojson.feature(d, o[Object.keys(o)[0]]); }
+    if (!d || !d.features){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load. Check your connection and reload.</p>'); return; }
+    feats = d.features.filter(function(f){ return f.geometry; });
+    feats.forEach(function(f){
+      var nm = (f.properties.name || '').toLowerCase();
+      f._b = box(f.geometry); f._k = key(f.properties.name || '');
+      f._ak = /aksai|china/.test(nm);
+      f._pok = !f._ak && /gilgit|baltistan|azad|pakistan|\bpok\b|mirpur|muzaffarabad/.test(nm);
+    });
+    var all = feats.map(function(f){ return f._b; });
+    bb = [Math.min.apply(0, all.map(function(b){ return b[0]; })), Math.min.apply(0, all.map(function(b){ return b[1]; }))];
+    bb[2] = Math.max.apply(0, all.map(function(b){ return b[0] + b[2]; })) - bb[0]; bb[3] = Math.max.apply(0, all.map(function(b){ return b[1] + b[3]; })) - bb[1];
+    var pad = bb[2] * .04; bb = [bb[0] - pad, bb[1] - pad, bb[2] + 2 * pad, bb[3] + 2 * pad]; vb = bb.slice();
+    TOL = bb[2] / 1100;
+    feats.forEach(function(f){ f._d = geoD(f.geometry, TOL); });
+    var locD = loc();
+    feats.forEach(function(f, i){ if (f._pok || f._ak) return; var k = key(info(f).n); if (!(k in ix)) ix[k] = i; });
+    feats.forEach(function(f, i){ var k = key(info(f).n); if (!(k in ix)) ix[k] = i; });
+    Object.keys(D).forEach(function(k){ if (!(k in ix)){ feats.push({properties:{name:D[k].n}, _d:'', _b:null, _k:k}); ix[k] = feats.length - 1; } });
+    var paths = feats.map(function(f, i){ return f._b ? '<path class="st' + (f._pok ? ' pok' : '') + '" data-i="' + i + '" d="' + f._d + '"/>' : ''; }).join('');
+    var hatch = feats.map(function(f){ return f._pok ? '<path class="hatch" d="' + f._d + '"/>' : ''; }).join('');
+    var hw = bb[2] / 160;
+    var defs = '<defs><pattern id="pokH" width="' + hw + '" height="' + hw + '" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="pl" x1="0" y1="0" x2="0" y2="' + hw + '" stroke-width="' + hw / 4 + '"/></pattern></defs>';
+    var locP = locD ? '<path class="loc" d="' + locD + '" stroke-width="' + bb[2] / 330 + '" stroke-dasharray="' + bb[2] / 170 + ' ' + bb[2] / 340 + '"/>' : '';
+    var mk = ['chandigarh','delhi','dadraandnagarhavelianddamananddiu','lakshadweep','puducherry'].map(function(k){ var f = feats[ix[k]]; if (!f || !f._b) return ''; return '<circle class="utm" data-i="' + ix[k] + '" cx="' + (f._b[0] + f._b[2] / 2) + '" cy="' + (f._b[1] + f._b[3] / 2) + '" r="' + bb[2] / 90 + '"/>'; }).join('');
+    mapEl.insertAdjacentHTML('afterbegin', '<svg class="big" id="atSvg" viewBox="' + vb.join(' ') + '" role="group" aria-label="Map of India">' + defs + paths + hatch + locP + mk + '</svg>');
+    if (locD || hatch) mapEl.insertAdjacentHTML('beforeend', '<div class="at-leg">' + (hatch ? '<span><i class="lg h"></i>Pakistan-occupied Kashmir (PoK)</span>' : '') + (locD ? '<span><i class="lg l"></i>Line of Control (LoC)</span>' : '') + '</div>');
+    svg = $('atSvg'); svg.style.setProperty('--sw', bb[2] / 450);
+    $('atList').innerHTML = feats.map(function(f){ return '<option value="' + info(f).n + '">'; }).join('');
+    svg.addEventListener('click', function(e){ var p = e.target.closest('.st,.utm'); if (p) pick(+p.dataset.i); });
+    var tipBusy = false, tipEv = null;
+    svg.addEventListener('mousemove', function(e){
+      tipEv = e; if (tipBusy) return; tipBusy = true;
+      requestAnimationFrame(function(){
+        tipBusy = false;
+        var p = tipEv.target.closest('.st,.utm'), r = mapEl.getBoundingClientRect();
+        if (!p){ tip.style.opacity = 0; return; }
+        var f = feats[+p.dataset.i];
+        tip.textContent = f._pok ? 'Pakistan-occupied Kashmir (PoK)' : info(f).n;
+        tip.style.opacity = 1; tip.style.transform = 'translate(' + (tipEv.clientX - r.left + 12) + 'px,' + (tipEv.clientY - r.top + 12) + 'px)';
+      });
+    });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity = 0; });
+    var hm = $('homeMap'), hTip = $('homeTip'), hs = svg.cloneNode(true);
+    hs.removeAttribute('id'); hs.setAttribute('viewBox', bb.join(' ')); hs.setAttribute('preserveAspectRatio', 'xMaxYMid meet');
+    hs.innerHTML = hs.innerHTML.replace(/pokH/g, 'pokH2');
+    hm.insertBefore(hs, hm.firstChild);
+    hs.addEventListener('click', function(e){ var p = e.target.closest('.st,.utm'); if (p){ var i = +p.dataset.i; open(); pick(i); } });
+    hs.addEventListener('mousemove', function(e){ var p = e.target.closest('.st,.utm'), r = hm.getBoundingClientRect(); if (!p){ hTip.style.opacity = 0; return; } var f = feats[+p.dataset.i]; hTip.textContent = f._pok ? 'Pakistan-occupied Kashmir (PoK)' : info(f).n; hTip.style.opacity = 1; hTip.style.transform = 'translate(' + (e.clientX - r.left + 12) + 'px,' + (e.clientY - r.top + 12) + 'px)'; });
+    hs.addEventListener('mouseleave', function(){ hTip.style.opacity = 0; });
+  }
+  var tw = 0;
+  function tween(to){
+    var from = vb.slice(), t0 = performance.now(), id = ++tw;
+    svg.classList.add('moving');
+    (function s(t){
+      if (id !== tw) return;
+      var k = Math.min(1, (t - t0) / 450); k = k * k * (3 - 2 * k);
+      vb = from.map(function(v, i){ return v + (to[i] - v) * k; });
+      svg.setAttribute('viewBox', vb.join(' '));
+      if (k < 1) requestAnimationFrame(s); else svg.classList.remove('moving');
+    })(t0);
+  }
+  function zoom(f){ var cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2, w = vb[2] / f, h = vb[3] / f; tween([cx - w / 2, cy - h / 2, w, h]); }
+  function zoomTo(b){ if (!b){ tween(bb.slice()); return; } var m = Math.max(b[2], b[3] * (bb[2] / bb[3])) * 1.5, w = Math.max(m, bb[2] / 6), h = w * bb[3] / bb[2]; tween([b[0] + b[2] / 2 - w / 2, b[1] + b[3] / 2 - h / 2, w, h]); }
+  function info(f){ var k = f._k, x = D[k]; if (!x){ for (var q in D){ if (q.indexOf(k) === 0 || k.indexOf(q) === 0) x = D[q]; } } if (!x){ var nm = (f.properties.name || '').toLowerCase(); if (/aksai|china|gilgit|baltistan/.test(nm)) x = D.ladakh; else if (/azad|pakistan|kashmir|pok|mirpur|muzaffarabad/.test(nm)) x = D.jammuandkashmir; }
+    return x || {n:f.properties.name, cap:'', intro:''}; }
+  function probs(f){ var k = info(f).n ? key(info(f).n) : f._k; return P[k] || []; }
+  function sync(){ var kk = function(i){ return i == null ? null : key(info(feats[i]).n); }, ck = kk(cur), pk = pair.map(kk); [].forEach.call(svg.querySelectorAll('.st'), function(p){ var k2 = kk(+p.dataset.i); p.classList.toggle('on', !cmp && ck !== null && ck === k2); p.classList.toggle('cmp', cmp && pk.indexOf(k2) > -1); }); }
+  function pick(i){
+    if (cmp){ var j = pair.indexOf(i); if (j > -1) pair.splice(j, 1); else { pair.push(i); if (pair.length > 2) pair.shift(); } sync(); showCmp(); return; }
+    cur = i; cat = 'All'; sync(); zoomTo(feats[i]._b); show(); panel.scrollTop = 0;
+  }
+  function card(p){ return '<article class="pc"><h3><i>' + (IC[p[1]] || '•') + '</i><span><em>' + p[1] + '</em><br>' + p[0] + '</span></h3><p><strong>What:</strong> ' + p[2] + '</p><p><strong>Why it happens:</strong> ' + p[3] + '</p><p><strong>Effect on people:</strong> ' + p[4] + '</p><p><strong>Possible solutions:</strong> ' + p[5] + '</p><small>Sources: ' + p[6].map(function(s){ return '<a href="' + S[s][1] + '" target="_blank" rel="noopener">' + S[s][0] + '</a>'; }).join('') + '<br>Last updated: 12 Nov 2026. A qualitative summary, so check the sources above for current figures.</small></article>'; }
+  function show(){
+    var f = feats[cur], x = info(f), ps = probs(f).filter(function(p){ return cat === 'All' || p[1] === cat; });
+    var out = '<div class="at-hd">' + (f._b ? '<svg viewBox="' + f._b.join(' ') + '"><path d="' + f._d + '" fill="rgba(94,155,255,.45)" stroke="#fff" stroke-width="' + f._b[2] / 60 + '"/></svg>' : '') + '<div><h2>' + x.n + '</h2><div class="at-sub">Capital: ' + x.cap + '</div></div></div><p class="at-sub">' + x.intro + '</p>';
+    if (f._pok) out += '<article class="pc"><em>Pakistan-occupied Kashmir (PoK)</em><p>This area is administered by Pakistan. India considers it part of the Union Territory of Jammu and Kashmir, with Gilgit-Baltistan shown under Ladakh. The dashed Line of Control (LoC) marks the line between the Indian-administered and Pakistan-administered areas.</p></article>';
+    out += '<div class="at-chips" role="group" aria-label="Filter by category">' + CATS.map(function(c){ return '<button type="button" aria-pressed="' + (c === cat) + '">' + c + '</button>'; }).join('') + '</div>';
+    out += probs(f).length ? (ps.length ? ps.map(card).join('') : '<p class="at-sub">No problems listed in this category for ' + x.n + '.</p>') : '<p class="at-sub">Researched problem cards for ' + x.n + ' are not added yet.</p>';
+    panel.innerHTML = out + '<button class="at-b" id="another" type="button">Explore another state</button>';
+    $('another').onclick = back;
+    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ cat = b.textContent; show(); }; });
+  }
+  function showCmp(){
+    if (pair.length < 2){ panel.innerHTML = '<h2>Compare states</h2><p class="at-sub">Tap two states on the map. Selected: ' + (pair.length ? info(feats[pair[0]]).n : 'none') + '.</p>'; return; }
+    panel.innerHTML = '<h2>Compare states</h2><div class="cmpg">' + pair.map(function(i){ var f = feats[i], ps = probs(f); return '<div><h3 style="margin:8px 0">' + info(f).n + '</h3>' + (ps.length ? ps.map(function(p){ return '<div class="pc"><em>' + p[1] + '</em><h3 style="font-size:14px">' + p[0] + '</h3><p>' + p[2] + '</p></div>'; }).join('') : '<p class="at-sub">Not added yet.</p>') + '</div>'; }).join('') + '</div>';
+  }
+  function hint(){
+    var h = function(a){ return a.map(function(k){ return '<button type="button" data-k="' + k + '">' + D[k].n + '</button>'; }).join(''); };
+    var ks = Object.keys(D), ut = ks.filter(function(k){ return UTS.indexOf(k) > -1; }), st = ks.filter(function(k){ return UTS.indexOf(k) < 0; });
+    panel.innerHTML = '<h2>Explore India</h2><p class="at-sub">Tap any state or Union Territory on the map, or pick one below. Orange dots mark small Union Territories. You can also search by name or turn on Compare states.</p><h3>States (' + st.length + ')</h3><div class="at-chips">' + h(st) + '</div><h3>Union Territories (' + ut.length + ')</h3><div class="at-chips">' + h(ut) + '</div>';
+    [].forEach.call(panel.querySelectorAll('.at-chips button'), function(b){ b.onclick = function(){ var i = ix[b.dataset.k]; if (i != null) pick(i); }; });
+  }
+  function back(){ cur = null; pair = []; cmp = false; $('atCmp').setAttribute('aria-pressed', 'false'); sync(); tween(bb.slice()); hint(); mapEl.scrollIntoView({behavior:'smooth', block:'start'}); }
+  function ensureMap(){
+    if (svg) return;
+    if (Object.keys(Highcharts.maps).length) load();
+    else { var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/@highcharts/map-collection@2.3.2/countries/in/in-all.js'; sc.onload = load; sc.onerror = load; document.head.appendChild(sc); }
+  }
+  function open(){
+    atlas.hidden = false;
+    $('hero').style.visibility = 'hidden'; document.body.style.overflow = 'hidden';
+    ensureMap();
+    hint();
+  }
+  function shut(){ atlas.hidden = true; $('hero').style.visibility = ''; document.body.style.overflow = ''; }
+  $('atX').onclick = shut;
+  $('atBack').onclick = back;
+  $('atCmp').onclick = function(){ cmp = !cmp; pair = []; cur = null; this.setAttribute('aria-pressed', cmp); sync(); if (cmp) showCmp(); else hint(); tween(bb.slice()); };
+  $('zi').onclick = function(){ zoom(1.5); }; $('zo').onclick = function(){ zoom(1 / 1.5); }; $('zr').onclick = function(){ tween(bb.slice()); };
+  $('atQ').addEventListener('change', function(){ var q = this.value.trim().toLowerCase(), i = -1; feats.forEach(function(f, n){ if (i < 0 && (f.properties.name + ' ' + info(f).n).toLowerCase().indexOf(q) > -1) i = n; }); if (i > -1){ pick(i); this.blur(); } });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !atlas.hidden) shut(); });
+  load = (function(l){ return function(){ try { l(); } catch (err){ mapEl.insertAdjacentHTML('afterbegin', '<p style="padding:20px">The map could not load.</p>'); } }; })(load);
+  ensureMap();
 })();
 </script>
 
